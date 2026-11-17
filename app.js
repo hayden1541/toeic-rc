@@ -262,7 +262,8 @@ function expHTML(q, cls, head) {
 
 // ───────── 지문 세트 묶음 화면 (Part 6·7) ─────────
 function grp(ids, i) { const g = QMAP[ids[i]].g; if (!g) return [i, i + 1]; let a = i, b = i + 1; while (a > 0 && QMAP[ids[a - 1]].g === g) a--; while (b < ids.length && QMAP[ids[b]].g === g) b++; return [a, b]; }
-function sqHead(q, n) { return `<div class="sq-h"><span class="sq-n">${n}</span>${CMAP[q.c] ? `<span class="tag">${esc(CMAP[q.c].name)}</span>` : ''}${dtag(q.d)}</div>`; }
+// 유형 태그는 채점 뒤에만 보여 줌 (풀기 전에 보이면 '동명사' 같은 이름이 답 힌트가 됨)
+function sqHead(q, n, sh) { return `<div class="sq-h"><span class="sq-n">${n}</span>${sh && CMAP[q.c] ? `<span class="tag">${esc(CMAP[q.c].name)}</span>` : ''}${dtag(q.d)}</div>`; }
 function quizSet() {
   const [a, b] = grp(QS.ids, QS.i); if (QS.i !== a) QS.i = a;
   const gids = QS.ids.slice(a, b), q0 = QMAP[gids[0]], sh = gids.every(id => id in QS.res);
@@ -271,7 +272,7 @@ function quizSet() {
   const nc = gids.filter(id => QS.res[id]).length;
   const head = `<div class="top"><div>${ptag(q0.p)}<span class="tag">${PSG[q0.g].docs.length > 1 ? (PSG[q0.g].docs.length === 3 ? '삼중 지문' : '이중 지문') : '단일 지문'} · ${gids.length}문항</span></div>${inkBar()}</div>`;
   const qs = gids.map((id, j) => { const q = QMAP[id], p = pk(id), ok = p === q.a;
-    return `<div class="sq" id="sq${id}">${sqHead(q, (a + j + 1) + '.')}<div class="q en">${qText(q)}</div>
+    return `<div class="sq" id="sq${id}">${sqHead(q, (a + j + 1) + '.', sh)}<div class="q en">${qText(q)}</div>
     ${q.o.map((t, k) => { let cl = ''; if (sh) { if (k === q.a) cl = 'right'; else if (k === p) cl = 'wrong'; } else if (k === p) cl = 'sel';
       return optHTML(q, k, cl, sh ? `${k === p && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `setTap(this,${id},${k})`, sh); }).join('')}
     ${sh ? `${expHTML(q, ok ? 'ok' : 'no', ok ? '정답' : p == null ? '미응답 · 정답 ' + MK[q.a] : '오답 · 정답 ' + MK[q.a])}
@@ -302,7 +303,7 @@ function checkSet() {
 function quiz() {
   if (QMAP[QS.ids[QS.i]].g) return quizSet();
   const q = QMAP[QS.ids[QS.i]], c = CMAP[q.c], sh = QS.shown, ok = QS.pick === q.a;
-  const head = `<div class="top"><div>${ptag(q.p)}${dtag(q.d)}<span class="tag">${esc(c.name)}</span></div>${inkBar()}</div>`;
+  const head = `<div class="top"><div>${ptag(q.p)}${dtag(q.d)}${sh ? `<span class="tag">${esc(c.name)}</span>` : ''}</div>${inkBar()}</div>`;
   const qblock = q.g ? `<div class="qno">${setInfo(q)}</div><div class="q en">${qText(q)}</div>` : '';
   return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${QS.i + 1} / ${QS.ids.length}</span><span style="width:40px"></span></div>
