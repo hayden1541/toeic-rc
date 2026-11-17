@@ -1,6 +1,9 @@
 'use strict';
 // ───────── 데이터 ─────────
 const BANK = window.BANK, PSG = window.PSG, CONCEPTS = window.CONCEPTS, FLASH = window.FLASH, GRAMMAR = window.GRAMMAR || {}, DICT = window.DICT || {}, DICT_FORM = window.DICT_FORM || {};
+// 보강 해설(data/expl.js)·지문 해석(data/psgtr.js)이 있으면 덮어씀
+const EXPL = window.EXPL || {}, PSGTR = window.PSGTR || {};
+BANK.forEach(q => { const x = EXPL[q.id]; if (x) Object.assign(q, x); });
 const QMAP = {}; BANK.forEach(q => { QMAP[q.id] = q; });
 const CMAP = {}; CONCEPTS.forEach(c => { CMAP[c.id] = c; });
 const BY_C = {}; BANK.forEach(q => { (BY_C[q.c] = BY_C[q.c] || []).push(q.id); });
@@ -66,7 +69,7 @@ const lvl = v => v == null ? '' : v < 0.6 ? 'low' : v < 0.8 ? 'mid' : 'high';
 // ───────── 유틸 ─────────
 const $ = s => document.querySelector(s);
 function esc(t) { return String(t).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m])); }
-function md(t) { return esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>'); }
+function md(t) { return esc(t).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>'); }
 function enq(t) { return esc(t).replace(/-{4,}/g, '<span class="blank cur">&nbsp;</span>'); }
 function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function toast(t) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 1800); }
@@ -85,24 +88,35 @@ function inl(t, cur) {
   return esc(t).replace(/\{(\d)\}/g, (m, n) => `<span class="blank ${+n === cur ? 'cur' : ''}">(${n})</span>`)
     .replace(/\[(\d)\]/g, '<span class="ins">[$1]</span>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
 }
-function docHTML(d, cur) {
+// t = 같은 문서의 해석({t, h, b}). 있으면 원문 아래에 회색으로 끼워 넣고, .psg.trs일 때만 보임
+function docHTML(d, cur, t) {
   let h = '';
+  const T = s => s ? `<span class="ptr">${inl(s, null)}</span>` : '';
   if (d.k) h += `<div class="doc-k">${esc(d.k)}</div>`;
-  if (d.h && d.h.length) h += `<div class="doc-h">${d.h.map(([k, v]) => `<div><b>${esc(k)}</b> ${inl(v, cur)}</div>`).join('')}</div>`;
-  if (d.t) h += `<div class="doc-t">${inl(d.t, cur)}</div>`;
-  (d.b || []).forEach(x => {
-    if (x.tb) h += `<table class="dt"><tr>${x.tb[0].map(c => `<th>${inl(c, cur)}</th>`).join('')}</tr>${x.tb.slice(1).map(r => `<tr>${r.map(c => `<td>${inl(c, cur)}</td>`).join('')}</tr>`).join('')}</table>`;
-    else if (x.ch) h += `<div class="chat"><i>${esc(x.ch[0])}</i><b>${esc(x.ch[1])}</b>: ${inl(x.ch[2], cur)}</div>`;
-    else h += `<p>${inl(x, cur)}</p>`;
+  if (d.h && d.h.length) h += `<div class="doc-h">${d.h.map(([k, v], i) => `<div><b>${esc(k)}</b> ${inl(v, cur)}${t && t.h ? T(t.h[i]) : ''}</div>`).join('')}</div>`;
+  if (d.t) h += `<div class="doc-t">${inl(d.t, cur)}${t ? T(t.t) : ''}</div>`;
+  (d.b || []).forEach((x, i) => {
+    const tx = t && t.b ? t.b[i] : null;
+    if (x.tb) h += `<table class="dt"><tr>${x.tb[0].map((c, j) => `<th>${inl(c, cur)}${tx ? T(tx[0] && tx[0][j] !== c ? tx[0][j] : '') : ''}</th>`).join('')}</tr>${x.tb.slice(1).map((r, ri) => `<tr>${r.map((c, j) => `<td>${inl(c, cur)}${tx ? T(tx[ri + 1] && tx[ri + 1][j] !== c ? tx[ri + 1][j] : '') : ''}</td>`).join('')}</tr>`).join('')}</table>`;
+    else if (x.ch) h += `<div class="chat"><i>${esc(x.ch[0])}</i><b>${esc(x.ch[1])}</b>: ${inl(x.ch[2], cur)}${T(tx)}</div>`;
+    else h += `<p>${inl(x, cur)}${T(tx)}</p>`;
   });
   return `<div class="doc">${h}</div>`;
 }
-let PSG_FULL = false;
-function psgHTML(g, cur, inkable) {
+let PSG_FULL = false, PSG_TR = false;
+// withTr: 채점 뒤에만 해석 버튼을 보여 줌 (풀기 전에 해석이 보이면 안 되니까)
+function psgHTML(g, cur, inkable, withTr) {
   const p = PSG[g]; if (!p) return '';
-  const body = p.docs.map(d => docHTML(d, cur)).join('');
-  return `<div class="psg ${PSG_FULL ? 'full' : ''}"><div class="psg-sc">${inkable ? `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${g}">${body}<canvas class="ink" id="ink"></canvas></div>` : body}</div>
-  <button class="psg-tg" onclick="PSG_FULL=!PSG_FULL;render()">${PSG_FULL ? '지문 접기 ▴' : '지문 전체 펼치기 ▾'}</button></div>`;
+  const tr = withTr && PSGTR[g] ? PSGTR[g].docs : null;
+  const body = p.docs.map((d, i) => docHTML(d, cur, tr ? tr[i] : null)).join('');
+  const trOn = tr && PSG_TR;
+  return `<div class="psg ${PSG_FULL ? 'full' : ''} ${trOn ? 'trs' : ''}"><div class="psg-sc">${inkable ? `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${g}">${body}<canvas class="ink" id="ink"></canvas></div>` : body}</div>
+  <div class="psg-bt">${tr ? `<button class="psg-tg tr-tg" onclick="psgTr(this)">${trOn ? '해석 숨기기' : '지문 해석 보기'}</button>` : ''}<button class="psg-tg" onclick="PSG_FULL=!PSG_FULL;render()">${PSG_FULL ? '지문 접기 ▴' : '지문 전체 펼치기 ▾'}</button></div></div>`;
+}
+// 다시 그리지 않고 클래스만 바꿔서 필기·스크롤 위치를 유지
+function psgTr(btn) {
+  PSG_TR = !PSG_TR; const box = btn.closest('.psg');
+  box.classList.toggle('trs', PSG_TR); btn.textContent = PSG_TR ? '해석 숨기기' : '지문 해석 보기';
 }
 function setInfo(q) { if (!q.g) return ''; const ids = BY_G[q.g]; return `${ids.indexOf(q.id) + 1} / ${ids.length}번 문항`; }
 function qText(q) { return q.p === 5 ? enq(q.q) : esc(q.q); }
@@ -232,13 +246,24 @@ function startPractice(o) {
 function startWrong() { const ids = expandSets(shuffle(wrongIds().map(id => QMAP[id])), 9999, new Set(wrongIds())); if (!ids.length) return toast('오답이 없어요'); QS = { ids, i: 0, mode: 'wrong', res: {}, picks: {}, pick: null, shown: false, title: '오답 다시 풀기' }; go('quiz'); }
 
 // ───────── 풀이 화면 ─────────
-function optHTML(q, k, cl, extra, onclick) {
-  return `<button class="opt ${cl}${extra || ''}" onclick="${onclick}"><span class="n">${LT[k]}</span><span class="ot ${/[가-힣]/.test(q.o[k]) ? '' : 'en'}">${esc(q.o[k])}${extra && extra.includes('hasw') ? whyH(q, k) : ''}</span></button>`;
+function optHTML(q, k, cl, extra, onclick, shown) {
+  const otr = shown && q.ot && q.ot[k] ? `<span class="otr">${esc(q.ot[k])}</span>` : '';
+  return `<button class="opt ${cl}${extra || ''}" onclick="${onclick}"><span class="n">${LT[k]}</span><span class="ot ${/[가-힣]/.test(q.o[k]) ? '' : 'en'}">${esc(q.o[k])}${otr}${extra && extra.includes('hasw') ? whyH(q, k) : ''}</span></button>`;
+}
+// 해설 상자: 질문 해석 → 해설 → 근거 문장 → 패러프레이즈 → 문장 해석 → 어휘
+function expHTML(q, cls, head) {
+  return `<div class="exp ${cls}">${head ? `<b>${head}</b><br>` : ''}${q.qt ? `<div class="x-qt">${esc(q.qt)}</div>` : ''}
+    <div class="x-e">${md(q.e.replace(/-{4,}/g, '____'))}</div>
+    ${q.ev ? `<div class="x-box"><span class="x-l">근거</span><span class="x-en">${esc(q.ev).replace(/\{\d\}/g, '_____').replace(/\s*\[\d\]\s*/g, ' ').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')}</span></div>` : ''}
+    ${q.pp ? `<div class="x-box"><span class="x-l">바꿔 말하기</span><span>${esc(q.pp)}</span></div>` : ''}
+    ${q.tr ? `<div class="x-box"><span class="x-l">해석</span><span>${esc(q.tr)}</span></div>` : ''}
+    ${q.v && q.v.length ? `<div class="x-v">${q.v.map(([w, m]) => `<span class="x-w"><b class="tapw">${esc(w)}</b> ${esc(m)}</span>`).join('')}</div>` : ''}</div>`;
 }
 
 // ───────── 지문 세트 묶음 화면 (Part 6·7) ─────────
 function grp(ids, i) { const g = QMAP[ids[i]].g; if (!g) return [i, i + 1]; let a = i, b = i + 1; while (a > 0 && QMAP[ids[a - 1]].g === g) a--; while (b < ids.length && QMAP[ids[b]].g === g) b++; return [a, b]; }
-function sqHead(q, n) { return `<div class="sq-h"><span class="sq-n">${n}</span>${CMAP[q.c] ? `<span class="tag">${esc(CMAP[q.c].name)}</span>` : ''}${dtag(q.d)}</div>`; }
+// 유형 태그는 채점 뒤에만 보여 줌 (풀기 전에 보이면 '동명사' 같은 이름이 답 힌트가 됨)
+function sqHead(q, n, sh) { return `<div class="sq-h"><span class="sq-n">${n}</span>${sh && CMAP[q.c] ? `<span class="tag">${esc(CMAP[q.c].name)}</span>` : ''}${dtag(q.d)}</div>`; }
 function quizSet() {
   const [a, b] = grp(QS.ids, QS.i); if (QS.i !== a) QS.i = a;
   const gids = QS.ids.slice(a, b), q0 = QMAP[gids[0]], sh = gids.every(id => id in QS.res);
@@ -247,15 +272,15 @@ function quizSet() {
   const nc = gids.filter(id => QS.res[id]).length;
   const head = `<div class="top"><div>${ptag(q0.p)}<span class="tag">${PSG[q0.g].docs.length > 1 ? (PSG[q0.g].docs.length === 3 ? '삼중 지문' : '이중 지문') : '단일 지문'} · ${gids.length}문항</span></div>${inkBar()}</div>`;
   const qs = gids.map((id, j) => { const q = QMAP[id], p = pk(id), ok = p === q.a;
-    return `<div class="sq" id="sq${id}">${sqHead(q, (a + j + 1) + '.')}<div class="q en">${qText(q)}</div>
+    return `<div class="sq" id="sq${id}">${sqHead(q, (a + j + 1) + '.', sh)}<div class="q en">${qText(q)}</div>
     ${q.o.map((t, k) => { let cl = ''; if (sh) { if (k === q.a) cl = 'right'; else if (k === p) cl = 'wrong'; } else if (k === p) cl = 'sel';
-      return optHTML(q, k, cl, sh ? `${k === p && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `setTap(this,${id},${k})`); }).join('')}
-    ${sh ? `<div class="exp ${ok ? 'ok' : 'no'}"><b>${ok ? '정답' : p == null ? '미응답 · 정답 ' + MK[q.a] : '오답 · 정답 ' + MK[q.a]}</b><br>${md(q.e)}</div>
+      return optHTML(q, k, cl, sh ? `${k === p && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `setTap(this,${id},${k})`, sh); }).join('')}
+    ${sh ? `${expHTML(q, ok ? 'ok' : 'no', ok ? '정답' : p == null ? '미응답 · 정답 ' + MK[q.a] : '오답 · 정답 ' + MK[q.a])}
       <div class="row" style="flex-wrap:wrap"><button class="chip c" onclick="showConcept('${q.c}')">유형 정리</button><button class="chip ${S.conf[id] ? 'on' : ''}" onclick="togConf(${id})">${S.conf[id] ? '헷갈림 표시됨' : '헷갈림 표시'}</button></div>` : ''}</div>`; }).join('');
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="quitQuiz()">✕</button>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${a + 1}–${b} / ${QS.ids.length}</span><span style="width:40px"></span></div>
-  <div class="bar" style="margin:10px 0 14px"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div>
-  <div class="qa"><div class="qa-l">${head}${psgHTML(q0.g, null, true)}</div><div class="qa-r">
+  <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
+  <div class="qa"><div class="qa-l">${head}${psgHTML(q0.g, null, true, sh)}</div><div class="qa-r">
   ${sh ? `<div class="sq-sum ${nc === gids.length ? 'ok' : ''}">${gids.length}문항 중 ${nc}개 정답${q0.w !== undefined ? ' · 오답 보기를 누르면 이유가 보여요' : ''}</div>` : `<div class="sub" style="margin-bottom:4px">지문 하나에 딸린 ${gids.length}문항을 모두 고른 뒤 한 번에 채점해요</div>`}
   ${qs}
   <div class="navrow"><button class="btn line" onclick="prevQ()" ${a ? '' : 'disabled'}>‹ 이전</button>
@@ -278,18 +303,18 @@ function checkSet() {
 function quiz() {
   if (QMAP[QS.ids[QS.i]].g) return quizSet();
   const q = QMAP[QS.ids[QS.i]], c = CMAP[q.c], sh = QS.shown, ok = QS.pick === q.a;
-  const head = `<div class="top"><div>${ptag(q.p)}${dtag(q.d)}<span class="tag">${esc(c.name)}</span></div>${inkBar()}</div>`;
+  const head = `<div class="top"><div>${ptag(q.p)}${dtag(q.d)}${sh ? `<span class="tag">${esc(c.name)}</span>` : ''}</div>${inkBar()}</div>`;
   const qblock = q.g ? `<div class="qno">${setInfo(q)}</div><div class="q en">${qText(q)}</div>` : '';
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="quitQuiz()">✕</button>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${QS.i + 1} / ${QS.ids.length}</span><span style="width:40px"></span></div>
-  <div class="bar" style="margin:10px 0 14px"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div>
+  <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
   <div class="qa"><div class="qa-l">${head}
-  ${q.g ? psgHTML(q.g, q.k, true) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}
+  ${q.g ? psgHTML(q.g, q.k, true, sh) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}
   </div><div class="qa-r">${qblock}
   ${q.o.map((t, k) => { let cl = ''; if (sh) { if (k === q.a) cl = 'right'; else if (k === QS.pick) cl = 'wrong'; } else if (k === QS.pick) cl = 'sel';
-    return optHTML(q, k, cl, sh ? `${k === QS.pick && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `optTap(this, ${k})`); }).join('')}
+    return optHTML(q, k, cl, sh ? `${k === QS.pick && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `optTap(this, ${k})`, sh); }).join('')}
   ${sh && q.w ? '<div class="why-hint">보기를 누르면 왜 틀렸는지 보여요</div>' : ''}
-  ${sh ? `<div class="exp ${ok ? 'ok' : 'no'}"><b>${ok ? '정답' : '오답 · 정답 ' + MK[q.a]}</b><br>${md(q.e)}${q.tr ? `<span class="tr">${esc(q.tr)}</span>` : ''}</div>
+  ${sh ? `${expHTML(q, ok ? 'ok' : 'no', ok ? '정답' : '오답 · 정답 ' + MK[q.a])}
     <div class="row" style="flex-wrap:wrap"><button class="chip c" onclick="showConcept('${c.id}')">유형 정리: ${esc(c.name)}</button>
     <button class="chip ${S.conf[q.id] ? 'on' : ''}" onclick="togConf(${q.id})">${S.conf[q.id] ? '헷갈림 표시됨' : '헷갈림 표시'}</button></div>
     <div class="navrow"><button class="btn line" onclick="prevQ()" ${QS.i ? '' : 'disabled'}>‹ 이전</button><button class="btn" onclick="nextQ()">${QS.i + 1 < QS.ids.length ? '다음 문제 ›' : '결과 보기'}</button></div>`
@@ -415,10 +440,10 @@ function optTap(el, k) { if (QS.shown) el.classList.toggle('open'); else pick(k)
 function whyH(q, k) { return q.w && k !== q.a && q.w[k] ? `<span class="why">✕ ${esc(q.w[k])}</span>` : ''; }
 function peek(id) {
   const q = QMAP[id];
-  sheet(`<div>${ptag(q.p)}${dtag(q.d)}<span class="tag">${esc(CMAP[q.c].name)}</span></div>${q.g ? psgHTML(q.g, q.k, false) + `<div class="qno">${setInfo(q)}</div>` : ''}<div class="q en">${qText(q)}</div>
-  ${q.o.map((t, k) => optHTML(q, k, k === q.a ? 'right' : '', q.w && k !== q.a ? ' hasw' : '', "this.classList.toggle('open')")).join('')}
+  sheet(`<div>${ptag(q.p)}${dtag(q.d)}<span class="tag">${esc(CMAP[q.c].name)}</span></div>${q.g ? psgHTML(q.g, q.k, false, true) + `<div class="qno">${setInfo(q)}</div>` : ''}<div class="q en">${qText(q)}</div>
+  ${q.o.map((t, k) => optHTML(q, k, k === q.a ? 'right' : '', q.w && k !== q.a ? ' hasw' : '', "this.classList.toggle('open')", true)).join('')}
   ${q.w ? '<div class="why-hint">보기를 누르면 왜 틀렸는지 보여요</div>' : ''}
-  <div class="exp ok">${md(q.e)}${q.tr ? `<span class="tr">${esc(q.tr)}</span>` : ''}</div>
+  ${expHTML(q, 'ok', '정답 ' + MK[q.a])}
   ${S.conf[id] ? `<button class="btn line" onclick="togConf(${id});closeSheet()">헷갈림 표시 해제</button>` : ''}`);
 }
 
@@ -444,7 +469,7 @@ function conceptBody(c, inSheet) {
 }
 function gramHTML(g) {
   return `${g.intro ? `<p class="g-intro">${md(g.intro)}</p>` : ''}${(g.rules || []).map((r, i) => `<div class="g-rule"><div class="g-h"><span>${i + 1}</span><div>${md(r.h)}</div></div>${r.p ? `<div class="g-p">${md(r.p)}</div>` : ''}
-    ${(r.ex || []).map(([en, ko]) => `<div class="g-ex"><div class="en tapw">${esc(en)}</div><div class="ko">${esc(ko)}</div></div>`).join('')}</div>`).join('')}
+    ${(r.ex || []).map(([en, ko]) => `<div class="g-ex"><div class="en tapw">${md(en)}</div><div class="ko">${md(ko)}</div></div>`).join('')}</div>`).join('')}
   ${g.list ? `<div class="g-list"><b>${esc(g.listTitle || '빈출 표현')}</b>${g.list.map(([en, ko]) => `<div class="it"><span class="en tapw">${esc(en)}</span><span class="ko">${esc(ko)}</span></div>`).join('')}</div>` : ''}`;
 }
 function concept() { return `<button class="icon-btn" onclick="go('concepts')">← 유형 목록</button>` + `<div class="card" style="margin-top:12px">${conceptBody(CMAP[P.id])}</div>`; }
@@ -516,8 +541,8 @@ function mockrun() {
   const gids = MK_S.ids.slice(a, b), q = QMAP[gids[0]], answered = Object.keys(MK_S.ans).length, N = MK_S.ids.length;
   const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + 101}.</span></div><div class="q en">${qText(x)}</div>${x.o.map((t, k) => optHTML(x, k, MK_S.ans[id] === k ? 'sel' : '', '', `mkTap(this,${id},${k})`)).join('')}</div>`; }).join('')
     : q.o.map((t, k) => optHTML(q, k, MK_S.ans[q.id] === k ? 'sel' : '', '', `mkTap(this,${q.id},${k})`)).join('');
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
-    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
+    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div></div>
   <div class="sub" style="margin-top:10px">Part ${q.p} · ${b - a > 1 ? `${a + 101}–${b + 100}번` : `${a + 101}번`}</div>
   <div class="qa"><div class="qa-l"><div class="top" style="justify-content:flex-end">${inkBar()}</div>
   ${q.g ? psgHTML(q.g, null, true) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}</div><div class="qa-r">
@@ -674,8 +699,8 @@ document.addEventListener('click', e => {
   const pop = document.getElementById('wpop');
   if (pop && pop.contains(e.target)) return;
   if (INK.on) return;
-  const zone = e.target.closest && e.target.closest('.psg .doc, .q.en, .tapw');
-  if (!zone) { closePop(); return; }
+  const zone = e.target.closest && e.target.closest('.psg .doc, .q.en, .tapw, .x-en');
+  if (!zone || e.target.closest('.ptr')) { closePop(); return; }
   const hit = wordAt(e.clientX, e.clientY);
   if (!hit) { closePop(); return; }
   showPop(hit.word, hit.rect);
