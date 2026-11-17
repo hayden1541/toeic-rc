@@ -180,6 +180,27 @@ table.qt-tb tr:last-child td{border-bottom:0}
 .opt .ot.en{font-family:Georgia,"Times New Roman",serif;font-size:16px;word-break:normal}
 .opt .why{font-family:-apple-system,"Apple SD Gothic Neo",sans-serif}
 .exp .tr{display:block;color:var(--sub);font-size:14px;margin-top:6px}
+/* 보강 해설 */
+.exp .x-qt{font-size:14px;color:var(--sub);margin:2px 0 8px;padding-bottom:8px;border-bottom:1px solid rgba(127,127,127,.18)}
+.exp .x-e b{color:var(--pri)}
+.exp .x-box{display:flex;gap:8px;margin-top:9px;font-size:14px;line-height:1.5}
+.exp .x-l{flex:none;font-size:11.5px;font-weight:700;color:var(--sub);padding-top:2px;min-width:44px}
+.exp .x-en{font-family:Georgia,"Times New Roman",serif;font-size:14.5px}
+.exp .x-v{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.exp .x-w{font-size:13px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:3px 8px;color:var(--sub)}
+.exp .x-w b{color:var(--ink);font-weight:600;font-family:Georgia,"Times New Roman",serif}
+.opt .otr{display:block;font-size:13px;color:var(--sub);margin-top:3px;font-family:-apple-system,"Helvetica Neue",sans-serif;font-weight:400}
+/* 지문 해석: .trs일 때만 */
+.psg .ptr{display:none}
+.psg.trs .ptr{display:block;font:14px/1.55 -apple-system,"Helvetica Neue",sans-serif;color:var(--sub);margin-top:3px;word-break:keep-all}
+.psg.trs .ptr b{color:var(--pri)}
+.psg.trs .doc p{margin-bottom:13px}
+.psg.trs .doc-h .ptr{display:inline;margin-left:6px}
+.psg-bt{display:flex;border-top:1px solid var(--line)}
+.psg-bt .psg-tg{border-top:0;flex:1}
+.psg-bt .tr-tg{border-right:1px solid var(--line);font-weight:600}
+.g-ex .en b{color:var(--pri)}
+.g-ex .ko b{color:var(--ink)}
 @media (min-width: 700px){ .psg-sc{max-height:52vh;padding:18px 20px 12px} .doc p{font-size:16.5px} .q.en{font-size:19px} .opt .ot.en{font-size:17px} }
 @media (min-width: 1000px){ .qa-l .psg-sc{max-height:calc(100vh - 170px - env(safe-area-inset-top))} .qa-l .psg-tg{display:none} }
 
@@ -214,6 +235,8 @@ table.qt-tb tr:last-child td{border-bottom:0}
 <script src="data/grammar.js"></script>
 <script src="data/dict.js"></script>
 <script src="data/basic.js"></script>
+<script src="data/expl.js"></script>
+<script src="data/psgtr.js"></script>
 <script src="app.js"></script>
 <script>
 // 오프라인 캐시 + 기록이 브라우저 정리 때 지워지지 않도록 요청
