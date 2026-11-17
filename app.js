@@ -253,7 +253,7 @@ function optHTML(q, k, cl, extra, onclick, shown) {
 // 해설 상자: 질문 해석 → 해설 → 근거 문장 → 패러프레이즈 → 문장 해석 → 어휘
 function expHTML(q, cls, head) {
   return `<div class="exp ${cls}">${head ? `<b>${head}</b><br>` : ''}${q.qt ? `<div class="x-qt">${esc(q.qt)}</div>` : ''}
-    <div class="x-e">${md(q.e)}</div>
+    <div class="x-e">${md(q.e.replace(/-{4,}/g, '____'))}</div>
     ${q.ev ? `<div class="x-box"><span class="x-l">근거</span><span class="x-en">${esc(q.ev).replace(/\{\d\}/g, '_____').replace(/\s*\[\d\]\s*/g, ' ').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')}</span></div>` : ''}
     ${q.pp ? `<div class="x-box"><span class="x-l">바꿔 말하기</span><span>${esc(q.pp)}</span></div>` : ''}
     ${q.tr ? `<div class="x-box"><span class="x-l">해석</span><span>${esc(q.tr)}</span></div>` : ''}
@@ -277,9 +277,9 @@ function quizSet() {
       return optHTML(q, k, cl, sh ? `${k === p && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `setTap(this,${id},${k})`, sh); }).join('')}
     ${sh ? `${expHTML(q, ok ? 'ok' : 'no', ok ? '정답' : p == null ? '미응답 · 정답 ' + MK[q.a] : '오답 · 정답 ' + MK[q.a])}
       <div class="row" style="flex-wrap:wrap"><button class="chip c" onclick="showConcept('${q.c}')">유형 정리</button><button class="chip ${S.conf[id] ? 'on' : ''}" onclick="togConf(${id})">${S.conf[id] ? '헷갈림 표시됨' : '헷갈림 표시'}</button></div>` : ''}</div>`; }).join('');
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="quitQuiz()">✕</button>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${a + 1}–${b} / ${QS.ids.length}</span><span style="width:40px"></span></div>
-  <div class="bar" style="margin:10px 0 14px"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div>
+  <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
   <div class="qa"><div class="qa-l">${head}${psgHTML(q0.g, null, true, sh)}</div><div class="qa-r">
   ${sh ? `<div class="sq-sum ${nc === gids.length ? 'ok' : ''}">${gids.length}문항 중 ${nc}개 정답${q0.w !== undefined ? ' · 오답 보기를 누르면 이유가 보여요' : ''}</div>` : `<div class="sub" style="margin-bottom:4px">지문 하나에 딸린 ${gids.length}문항을 모두 고른 뒤 한 번에 채점해요</div>`}
   ${qs}
@@ -305,9 +305,9 @@ function quiz() {
   const q = QMAP[QS.ids[QS.i]], c = CMAP[q.c], sh = QS.shown, ok = QS.pick === q.a;
   const head = `<div class="top"><div>${ptag(q.p)}${dtag(q.d)}${sh ? `<span class="tag">${esc(c.name)}</span>` : ''}</div>${inkBar()}</div>`;
   const qblock = q.g ? `<div class="qno">${setInfo(q)}</div><div class="q en">${qText(q)}</div>` : '';
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="quitQuiz()">✕</button>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${QS.i + 1} / ${QS.ids.length}</span><span style="width:40px"></span></div>
-  <div class="bar" style="margin:10px 0 14px"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div>
+  <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
   <div class="qa"><div class="qa-l">${head}
   ${q.g ? psgHTML(q.g, q.k, true, sh) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}
   </div><div class="qa-r">${qblock}
@@ -541,8 +541,8 @@ function mockrun() {
   const gids = MK_S.ids.slice(a, b), q = QMAP[gids[0]], answered = Object.keys(MK_S.ans).length, N = MK_S.ids.length;
   const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + 101}.</span></div><div class="q en">${qText(x)}</div>${x.o.map((t, k) => optHTML(x, k, MK_S.ans[id] === k ? 'sel' : '', '', `mkTap(this,${id},${k})`)).join('')}</div>`; }).join('')
     : q.o.map((t, k) => optHTML(q, k, MK_S.ans[q.id] === k ? 'sel' : '', '', `mkTap(this,${q.id},${k})`)).join('');
-  return `<div class="top" style="margin-top:4px"><button class="icon-btn" onclick="ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
-    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
+    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div></div>
   <div class="sub" style="margin-top:10px">Part ${q.p} · ${b - a > 1 ? `${a + 101}–${b + 100}번` : `${a + 101}번`}</div>
   <div class="qa"><div class="qa-l"><div class="top" style="justify-content:flex-end">${inkBar()}</div>
   ${q.g ? psgHTML(q.g, null, true) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}</div><div class="qa-r">
