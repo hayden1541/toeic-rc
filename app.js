@@ -662,14 +662,23 @@ function startMock() {
 }
 const fmtT = ms => { const s = Math.max(0, Math.floor(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 function mkGo(i) { const pg = QMAP[MK_S.ids[MK_S.i]].g; if (QMAP[MK_S.ids[i]].g) i = grp(MK_S.ids, i)[0]; MK_S.i = i; const g = QMAP[MK_S.ids[i]].g; if (g !== pg) PSG_FULL = false; render(); scrollTo(0, 0); }
-function mkTap(el, id, k) { MK_S.ans[id] = k; el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('sel')); el.classList.add('sel'); const c = document.getElementById('mkcnt'); if (c) c.textContent = Object.keys(MK_S.ans).length + '/' + MK_S.ids.length; }
+// 진단평가: 고르는 즉시 정답·오답과 해설을 보여 주고, 한 번 고른 답은 바꿀 수 없음
+function mkOpts(x) {
+  const p = MK_S.ans[x.id], inst = MK_S.kind === 'diag' && p != null;
+  return x.o.map((t, k) => { let cl = inst ? (k === x.a ? 'right' : k === p ? 'wrong' : '') : (p === k ? 'sel' : '');
+    return optHTML(x, k, cl, inst ? `${k === p && k !== x.a ? ' open' : ''}${x.w && k !== x.a ? ' hasw' : ''}` : '', inst ? "this.classList.toggle('open')" : `mkTap(this,${x.id},${k})`, inst); }).join('')
+    + (inst ? expHTML(x, p === x.a ? 'ok' : 'no', p === x.a ? '정답' : '오답 · 정답 ' + MK[x.a]) : '');
+}
+function mkTap(el, id, k) {
+  if (MK_S.kind === 'diag') { if (MK_S.ans[id] != null) return; MK_S.ans[id] = k; const y = window.scrollY; render(); window.scrollTo(0, y); return; }
+  MK_S.ans[id] = k; el.parentElement.querySelectorAll('.opt').forEach(o => o.classList.remove('sel')); el.classList.add('sel'); const c = document.getElementById('mkcnt'); if (c) c.textContent = Object.keys(MK_S.ans).length + '/' + MK_S.ids.length; }
 function mockrun() {
   const [a, b] = grp(MK_S.ids, MK_S.i); if (MK_S.i !== a) MK_S.i = a;
   const gids = MK_S.ids.slice(a, b), q = QMAP[gids[0]], answered = Object.keys(MK_S.ans).length, N = MK_S.ids.length;
-  const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + MK_S.base}.</span></div><div class="q en">${qText(x)}</div>${x.o.map((t, k) => optHTML(x, k, MK_S.ans[id] === k ? 'sel' : '', '', `mkTap(this,${id},${k})`)).join('')}</div>`; }).join('')
-    : q.o.map((t, k) => optHTML(q, k, MK_S.ans[q.id] === k ? 'sel' : '', '', `mkTap(this,${q.id},${k})`)).join('');
+  const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + MK_S.base}.</span></div><div class="q en">${qText(x)}</div>${mkOpts(x)}</div>`; }).join('')
+    : mkOpts(q);
   return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="ask('${mkName()}를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
-    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div></div>
+    <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${MK_S.kind === 'diag' ? `맞힘 ${Object.keys(MK_S.ans).filter(id => MK_S.ans[id] === QMAP[id].a).length} · ` : ''}${answered}/${N}</button></div></div>
   <div class="sub" style="margin-top:10px">Part ${q.p} · ${b - a > 1 ? `${a + MK_S.base}–${b + MK_S.base - 1}번` : `${a + MK_S.base}번`}</div>
   ${inkWrap('m' + gids[0], `<div class="qa"><div class="qa-l"><div class="top" style="justify-content:flex-end">${inkBar()}</div>
   ${q.g ? psgHTML(q.g, null, true) : `<div class="qcard"><div class="q en">${qText(q)}</div></div>`}</div><div class="qa-r">
@@ -714,7 +723,7 @@ function diag() {
   const L = S.diags, last = L[L.length - 1];
   return `<button class="icon-btn" onclick="go('home')">← 홈</button><h1>진단평가</h1>
   <div class="sub" style="margin-bottom:6px">50문항으로 지금 RC가 몇 점쯤인지 알아봐요</div>
-  <div class="card"><ul class="sum"><li>실제 RC 구성비 그대로 절반: Part 5 15 · Part 6 2지문 8 · Part 7 27</li><li>제한 시간 37분 30초 (실전과 같은 속도), 시간이 다 되면 자동 제출</li><li>기본~최고난도를 고르게 섞고, 안 푼 문제 위주로 뽑아요</li><li>어려운 문제를 맞히면 점수에 조금 더 반영돼요</li><li>문항이 50개라 예상 점수는 범위로 보여 줘요. 실제 성적과 다를 수 있어요</li></ul></div>
+  <div class="card"><ul class="sum"><li>실제 RC 구성비 그대로 절반: Part 5 15 · Part 6 2지문 8 · Part 7 27</li><li>제한 시간 37분 30초 (실전과 같은 속도), 시간이 다 되면 자동 제출</li><li>보기를 고르면 바로 정답과 해설이 나와요. 한 번 고른 답은 바꿀 수 없어요</li><li>기본~최고난도를 고르게 섞고, 안 푼 문제 위주로 뽑아요</li><li>어려운 문제를 맞히면 점수에 조금 더 반영돼요</li><li>문항이 50개라 예상 점수는 범위로 보여 줘요. 실제 성적과 다를 수 있어요</li></ul></div>
   ${last ? `<div class="sub" style="margin:4px 2px 10px">최근: ${last.date} · ${last.c}/${last.N} · 예상 ${last.score}점 (${last.lo}~${last.hi})</div>` : ''}
   <button class="btn" onclick="startDiag()">시작</button>`;
 }
