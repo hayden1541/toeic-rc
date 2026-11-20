@@ -157,8 +157,21 @@ table.qt-tb tr:last-child td{border-bottom:0}
 .inkbar .dot{width:24px;height:24px;border-radius:50%;background:var(--c);border:2.5px solid var(--card);box-shadow:0 0 0 1px var(--line)}
 .inkbar .dot.on{box-shadow:0 0 0 2px var(--c)}
 /* 문제 카드: 영어 문장을 흰 카드에 */
-.qa-l > .inkw{background:var(--card);border-radius:18px;padding:18px 18px 16px;margin:10px 0 4px}
-.qa-l > .inkw .q.en{margin:0}
+.qcard{background:var(--card);border-radius:18px;padding:18px 18px 16px;margin:10px 0 4px}
+.qcard .q.en{margin:0}
+/* 화면 전체 필기 (SQLD 합격노트 방식) */
+.inkall .inkbar,.inkall .inkbtn{position:relative;z-index:4}
+.inkall.inking{outline:2px dashed var(--pri-soft);outline-offset:6px;border-radius:12px}
+.inkall.inking .qa *{pointer-events:none}
+.inkall.inking .qa .inkbar,.inkall.inking .qa .inkbar *,.inkall.inking .qa .inkbtn{pointer-events:auto}
+.inkall .ink{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.inkall.inking .psg-sc,.inkall.hasink .psg-sc{max-height:none!important;overflow:visible}
+.inkall.inking .psg-bt .psg-tg:not(.tr-tg),.inkall.hasink .psg-bt .psg-tg:not(.tr-tg){display:none}
+.inkall.inking .qa-l,.inkall.hasink .qa-l{position:static!important}
+.inkbar-w{display:flex;justify-content:flex-end;margin-left:auto}
+.qa-l > .top{flex-wrap:wrap;row-gap:8px}
+.inkbar.float{position:fixed;z-index:40;background:var(--card);border-radius:16px;padding:6px 8px;box-shadow:0 0 0 .5px var(--line),0 8px 24px rgba(0,0,0,.16);max-width:calc(100vw - 16px)}
+.inkbar .inkbtn.las.on{background:#ff3b30;color:#fff;box-shadow:0 0 10px rgba(255,59,48,.55)}
 @media (min-width: 700px){ .qt{padding:8px 10px 6px} table.qt-tb{font-size:13px;letter-spacing:0} table.qt-tb th,table.qt-tb td{padding:3px 8px} .inkbtn{font-size:13.5px;padding:7px 13px} .inkbar .dot{width:28px;height:28px} }
 /* ───── 태블릿 (아이패드) ───── */
 @media (min-width: 700px){

@@ -14,7 +14,7 @@ const PARTS = [5, 6, 7], PNAME = { 5: 'Part 5 · 단문 빈칸', 6: 'Part 6 · �
 
 // ───────── 저장 ─────────
 const KEY = 'toeic_rc_v1';
-function blank() { return { v: 1, att: {}, days: {}, conf: {}, cdone: {}, mocks: [], fl: {}, resume: {}, myw: {}, set: { goal: 40, exam: '2026-11-29' } }; }
+function blank() { return { v: 1, att: {}, days: {}, conf: {}, cdone: {}, mocks: [], diags: [], fl: {}, resume: {}, myw: {}, set: { goal: 40, exam: '2026-11-29' } }; }
 let S;
 try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
 if (!S && window.__NATIVE_STATE) S = window.__NATIVE_STATE;
@@ -110,7 +110,7 @@ function psgHTML(g, cur, inkable, withTr) {
   const tr = withTr && PSGTR[g] ? PSGTR[g].docs : null;
   const body = p.docs.map((d, i) => docHTML(d, cur, tr ? tr[i] : null)).join('');
   const trOn = tr && PSG_TR;
-  return `<div class="psg ${PSG_FULL ? 'full' : ''} ${trOn ? 'trs' : ''}"><div class="psg-sc">${inkable ? `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${g}">${body}<canvas class="ink" id="ink"></canvas></div>` : body}</div>
+  return `<div class="psg ${PSG_FULL ? 'full' : ''} ${trOn ? 'trs' : ''}"><div class="psg-sc">${body}</div>
   <div class="psg-bt">${tr ? `<button class="psg-tg tr-tg" onclick="psgTr(this)">${trOn ? '해석 숨기기' : '지문 해석 보기'}</button>` : ''}<button class="psg-tg" onclick="PSG_FULL=!PSG_FULL;render()">${PSG_FULL ? '지문 접기 ▴' : '지문 전체 펼치기 ▾'}</button></div></div>`;
 }
 // 다시 그리지 않고 클래스만 바꿔서 필기·스크롤 위치를 유지
@@ -135,13 +135,18 @@ function renderTabs() {
 }
 function render() {
   renderTabs();
-  const f = { home, practice, quiz, result, wrong, concepts, concept, stats, mock, mockrun, mockresult, flash, settings }[view];
+  const f = { home, practice, quiz, result, wrong, concepts, concept, stats, mock, mockrun, mockresult, diag, diagresult, flash, settings }[view];
   $('#app').innerHTML = '<div class="wrap">' + f() + '</div>';
   closePop();
-  inkMount();
+  inkMount(); inkBarFloat();
 }
 
 // ───────── 홈 ─────────
+function diagCard() {
+  const last = S.diags[S.diags.length - 1];
+  return `<div class="card" onclick="go('diag')"><div class="top"><b>진단평가</b><span class="sub">${last ? `${last.date.slice(5).replace('-', '/')} · 예상 ${last.score}점 ›` : '50문항 · 37분 ›'}</span></div>
+  <div class="sub" style="margin-top:4px">${last ? `범위 ${last.lo}~${last.hi}점 · 다시 보면 점수 변화를 비교할 수 있어요` : '지금 RC가 몇 점쯤인지 실전 속도로 확인해요'}</div></div>`;
+}
 function home() {
   const o = overall(), td = S.days[today()] || { n: 0, c: 0 }, w = weakList().slice(0, 4), wn = wrongIds().length, dd = dday();
   const goalP = Math.min(1, td.n / S.set.goal);
@@ -166,6 +171,7 @@ function home() {
     ${resumeInfo('wrong') ? `<button class="btn line" onclick="resumeQS('wrong')">오답 이어서 · ${resumeInfo('wrong').left}</button>` : `<button class="btn line" onclick="startWrong()" ${wn ? '' : 'disabled'}>오답 다시 풀기</button>`}
     <button class="btn line" onclick="go('flash')">단어 카드</button>
   </div>
+  ${diagCard()}
   ${basicCard(un)}
   ${PARTS.map(p => { const s = overall(q => q.p === p), u = un.filter(q => q.p === p).length, sets = p === 5 ? 0 : new Set(BANK.filter(q => q.p === p).map(q => q.g)).size;
     return `<div class="card"><div class="top"><b>${PNAME[p]}</b><span class="sub">${s.solved}/${s.total}${sets ? ` · 지문 ${sets}개` : ''} · ${pct(s.acc)}</span></div>
@@ -280,12 +286,12 @@ function quizSet() {
   return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${a + 1}–${b} / ${QS.ids.length}</span><span style="width:40px"></span></div>
   <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
-  <div class="qa"><div class="qa-l">${head}${psgHTML(q0.g, null, true, sh)}</div><div class="qa-r">
+  ${inkWrap(q0.g, `<div class="qa"><div class="qa-l">${head}${psgHTML(q0.g, null, true, sh)}</div><div class="qa-r">
   ${sh ? `<div class="sq-sum ${nc === gids.length ? 'ok' : ''}">${gids.length}문항 중 ${nc}개 정답${q0.w !== undefined ? ' · 오답 보기를 누르면 이유가 보여요' : ''}</div>` : `<div class="sub" style="margin-bottom:4px">지문 하나에 딸린 ${gids.length}문항을 모두 고른 뒤 한 번에 채점해요</div>`}
   ${qs}
   <div class="navrow"><button class="btn line" onclick="prevQ()" ${a ? '' : 'disabled'}>‹ 이전</button>
   ${sh ? `<button class="btn" onclick="nextQ()">${b < QS.ids.length ? '다음 ›' : '결과 보기'}</button>` : `<button class="btn" id="chkbtn" onclick="checkSet()" ${all ? '' : 'disabled'}>${gids.length}문항 채점</button>`}</div>
-  </div></div><div class="sub" style="text-align:center;margin-top:14px">${q0.g} · #${gids.join(', #')}</div>`;
+  </div></div>`)}<div class="sub" style="text-align:center;margin-top:14px">${q0.g} · #${gids.join(', #')}</div>`;
 }
 function setTap(el, id, k) {
   const [a, b] = grp(QS.ids, QS.i), gids = QS.ids.slice(a, b);
@@ -308,8 +314,8 @@ function quiz() {
   return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="quitQuiz()">✕</button>
     <span class="sub">${esc(QS.title)} · ${QS.i + 1} / ${QS.ids.length}</span><span style="width:40px"></span></div>
   <div class="bar qprog"><i style="width:${Object.keys(QS.res).length / QS.ids.length * 100}%"></i></div></div>
-  <div class="qa"><div class="qa-l">${head}
-  ${q.g ? psgHTML(q.g, q.k, true, sh) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}
+  ${inkWrap(String(q.id), `<div class="qa"><div class="qa-l">${head}
+  ${q.g ? psgHTML(q.g, q.k, true, sh) : `<div class="qcard"><div class="q en">${qText(q)}</div></div>`}
   </div><div class="qa-r">${qblock}
   ${q.o.map((t, k) => { let cl = ''; if (sh) { if (k === q.a) cl = 'right'; else if (k === QS.pick) cl = 'wrong'; } else if (k === QS.pick) cl = 'sel';
     return optHTML(q, k, cl, sh ? `${k === QS.pick && k !== q.a ? ' open' : ''}${q.w && k !== q.a ? ' hasw' : ''}` : '', `optTap(this, ${k})`, sh); }).join('')}
@@ -319,7 +325,7 @@ function quiz() {
     <button class="chip ${S.conf[q.id] ? 'on' : ''}" onclick="togConf(${q.id})">${S.conf[q.id] ? '헷갈림 표시됨' : '헷갈림 표시'}</button></div>
     <div class="navrow"><button class="btn line" onclick="prevQ()" ${QS.i ? '' : 'disabled'}>‹ 이전</button><button class="btn" onclick="nextQ()">${QS.i + 1 < QS.ids.length ? '다음 문제 ›' : '결과 보기'}</button></div>`
   : `<div class="navrow"><button class="btn line" onclick="prevQ()" ${QS.i ? '' : 'disabled'}>‹ 이전</button><button class="btn" onclick="check()" ${QS.pick == null ? 'disabled' : ''}>정답 확인</button></div>`}
-  </div></div>
+  </div></div>`)}
   <div class="sub" style="text-align:center;margin-top:14px">#${q.id}${q.g ? ' · ' + q.g : ''}</div>`;
 }
 function pick(k) { if (QS.shown) return; QS.pick = k; render(); }
@@ -356,22 +362,78 @@ function resumeQS(k) {
 function togConf(id) { if (S.conf[id]) delete S.conf[id]; else S.conf[id] = 1; save(); render(); }
 function showConcept(id) { sheet(conceptBody(CMAP[id], true)); }
 
-// ───────── 필기 ─────────
-const INK = { on: false, col: '#e5484d', er: false, s: {}, pen: false };
+// ───────── 필기 (SQLD 합격노트와 같은 방식) ─────────
+// 문제·보기·해설·지문 전체 위에 쓸 수 있고, 획은 가장 가까운 블록(문단·보기·해설…)에 붙어 있어
+// 해설이 열리거나 지문 해석을 켜서 화면이 밀려도 제자리를 따라간다.
+const INK = { on: false, col: '#e5484d', er: false, s: {}, pen: false, las: false, L: [] };
+try { if (localStorage.getItem('rc_pen') === '1') INK.pen = true; } catch (e) {}
+function penMode(on) { INK.pen = on; try { localStorage.setItem('rc_pen', on ? '1' : '0'); } catch (e) {} }
+let inkFl = 0;
+function inkFling(v) { // 손을 뗀 뒤에도 조금 더 미끄러지듯 스크롤
+  const id = ++inkFl; let t = performance.now();
+  const step = n => { if (id !== inkFl) return; const dt = Math.min(40, n - t); t = n; window.scrollBy(0, v * dt); v *= Math.pow(0.995, dt); if (Math.abs(v) > 0.03) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 const INK_COLS = ['#e5484d', '#2f6fde', '#1f9d55'];
 function inkBar() {
   if (!INK.on) return `<button class="inkbtn" onclick="inkToggle()">✎ 필기</button>`;
-  return `<div class="inkbar">${INK_COLS.map(c => `<button class="dot ${!INK.er && INK.col === c ? 'on' : ''}" style="--c:${c}" onclick="INK.col='${c}';INK.er=false;inkBarRefresh()"></button>`).join('')}
-    <button class="inkbtn ${INK.er ? 'on' : ''}" onclick="INK.er=!INK.er;inkBarRefresh()">지우개</button>
-    <button class="inkbtn" onclick="inkClear()">전체 지우기</button>
-    <button class="inkbtn on" onclick="inkToggle()">완료</button></div>`;
+  return `<div class="inkbar-w"><div class="inkbar">${INK_COLS.map(c => `<button class="dot ${!INK.er && !INK.las && INK.col === c ? 'on' : ''}" style="--c:${c}" onclick="INK.col='${c}';INK.er=false;INK.las=false;inkBarRefresh()"></button>`).join('')}
+    <button class="inkbtn las ${INK.las ? 'on' : ''}" onclick="INK.las=!INK.las;INK.er=false;inkBarRefresh()" title="떼면 사라지는 펜">레이저</button>
+    <button class="inkbtn ${INK.er ? 'on' : ''}" onclick="INK.er=!INK.er;INK.las=false;inkBarRefresh()">지우개</button>
+    <button class="inkbtn" onclick="inkUndo()">되돌리기</button>
+    ${INK.cl && INK.cl[inkKey()] && !(INK.s[inkKey()] || []).length ? `<button class="inkbtn on" onclick="inkRestore()">복원</button>` : `<button class="inkbtn" onclick="inkClear()">전체 지우기</button>`}
+    <button class="inkbtn on" onclick="inkToggle()">완료</button></div></div>`;
 }
-function inkToggle() { INK.on = !INK.on; INK.er = false; render(); }
-function inkBarRefresh() { const b = document.querySelector('.inkbar'); if (b) b.outerHTML = inkBar(); }
-function inkClear() { const w = $('#inkw'); if (!w) return; INK.s[w.dataset.q] = []; inkDraw(); }
+// 필기 영역: 화면의 문제 부분(.qa) 전체를 감싼다
+function inkWrap(key, inner) {
+  return `<div class="inkw inkall ${INK.on ? 'inking' : ''}${(INK.s[key] || []).length ? ' hasink' : ''}" id="inkw" data-q="${key}">${inner}<canvas class="ink" id="ink"></canvas></div>`;
+}
+function inkToggle() { INK.on = !INK.on; INK.er = false; INK.las = false; INK.L = []; render(); }
+// 애플펜슬 몸통 두 번 탭(앱으로 감쌌을 때 앱이 호출): 풀이·모의고사 화면에서만
+window.onPencilTap = () => {
+  if ((view !== 'quiz' && view !== 'mockrun') || document.getElementById('sheet')) return;
+  INK.pen = true; inkToggle(); toast(INK.on ? '필기 켜짐' : '필기 꺼짐');
+};
+function inkUndo() {
+  const l = INK.s[inkKey()];
+  if ((!l || !l.length) && INK.cl && INK.cl[inkKey()]) return inkRestore();
+  if (!l || !l.length) return toast('되돌릴 필기가 없어요');
+  l.pop(); if (!l.length) { const w = $('#inkw'); if (w) w.classList.remove('hasink'); }
+  inkDraw(); inkBarRefresh(); toast(l.length || !(INK.cl && INK.cl[inkKey()]) ? '방금 한 것을 취소했어요' : '획을 다 취소했어요 · 한 번 더 누르면 전체 지우기 전으로');
+}
+document.addEventListener('keydown', e => { if (INK.on && $('#inkw') && (e.metaKey || e.ctrlKey) && !e.shiftKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); inkUndo(); } });
+function inkBarRefresh() { const b = document.querySelector('.inkbar-w'); if (b) b.outerHTML = inkBar(); inkBarFloat(); }
+// 도구막대가 위로 밀려 올라가면 상단 바 바로 아래에 띄워 고정
+function inkBarFloat() {
+  const w = document.querySelector('.inkbar-w'), b = w && w.firstElementChild; if (!b) return;
+  const qb = document.querySelector('.qbar'), lim = qb ? qb.getBoundingClientRect().bottom : 0, r = w.getBoundingClientRect();
+  if (r.top < lim + 6) {
+    if (!b.classList.contains('float')) { w.style.height = b.offsetHeight + 'px'; b.classList.add('float'); }
+    b.style.top = (lim + 6) + 'px'; b.style.right = Math.max(8, window.innerWidth - r.right - 8) + 'px';
+  } else if (b.classList.contains('float')) { b.classList.remove('float'); b.style.right = ''; b.style.top = ''; w.style.height = ''; }
+}
+window.addEventListener('scroll', inkBarFloat, { passive: true });
+window.addEventListener('resize', inkBarFloat);
+function inkClear() { const w = $('#inkw'); if (!w) return; const k = w.dataset.q, l = INK.s[k] || []; if (!l.length) return toast('지울 필기가 없어요'); (INK.cl = INK.cl || {})[k] = l.slice(); INK.s[k] = []; w.classList.remove('hasink'); inkDraw(); inkBarRefresh(); toast('모두 지웠어요 · 복원을 누르면 되돌려요'); }
+function inkRestore() { const w = $('#inkw'); if (!w) return; const k = w.dataset.q, b = INK.cl && INK.cl[k]; if (!b) return; INK.s[k] = b.concat(INK.s[k] || []); delete INK.cl[k]; w.classList.add('hasink'); inkDraw(); inkBarRefresh(); toast('필기를 되돌렸어요'); }
 function inkKey() { const w = $('#inkw'); return w ? w.dataset.q : null; }
-function inkStroke(ctx, st) {
-  const p = st.p; if (!p.length) return;
+// 획이 붙을 블록: 작은 것(표 칸·문단·보기)부터 큰 것(지문·좌우 영역)까지
+const INK_AN = [['x', '.doc table.dt td, .doc table.dt th'], ['p', '.doc p, .doc .chat, .doc-t, .doc-h > div'], ['k', '.doc-k'], ['d', '.doc'], ['s', '.psg'],
+  ['q', '.q'], ['c', '.qcard'], ['o', '.opt'], ['e', '.exp'], ['h', '.sq-sum, .why-hint'], ['sq', '.sq'], ['L', '.qa-l'], ['R', '.qa-r']];
+function inkAnchors(w, cv) {
+  const cr = cv.getBoundingClientRect(), out = [];
+  INK_AN.forEach(([k, sel]) => w.querySelectorAll(sel).forEach((el, i) => { const r = el.getBoundingClientRect(); if (r.width && r.height) out.push({ id: k + i, x: r.left - cr.left, y: r.top - cr.top, w: r.width, h: r.height }); }));
+  return out;
+}
+function inkPick(an, x, y) { // 점을 품은 가장 작은 블록, 없으면 세로로 가장 가까운 블록
+  let best = null, bs = Infinity;
+  an.forEach(b => { const dx = x < b.x ? b.x - x : x > b.x + b.w ? x - b.x - b.w : 0, dy = y < b.y ? b.y - y : y > b.y + b.h ? y - b.y - b.h : 0;
+    const sc = (dx || dy) ? 1e9 + dy * 1e4 + dx : b.w * b.h; if (sc < bs) { bs = sc; best = b; } });
+  return best;
+}
+function inkStroke(ctx, st, off) {
+  const ox = off ? off[0] : 0, oy = off ? off[1] : 0;
+  const p = ox || oy ? st.p.map(q => [q[0] + ox, q[1] + oy]) : st.p; if (!p.length) return;
   ctx.globalCompositeOperation = st.e ? 'destination-out' : 'source-over';
   ctx.strokeStyle = st.c; ctx.lineWidth = st.e ? 22 : 2.4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]);
@@ -379,34 +441,98 @@ function inkStroke(ctx, st) {
   for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]);
   ctx.stroke();
 }
+// 캔버스 픽셀 배율 (iOS 캔버스 면적 한도 16.7M 픽셀 안으로)
+function inkScale(cv) { return cv.width / (parseFloat(cv.style.width) || cv.width || 1); }
 function inkDraw() {
-  const cv = $('#ink'); if (!cv) return; const ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  (INK.s[inkKey()] || []).forEach(st => inkStroke(ctx, st));
+  const cv = $('#ink'); if (!cv) return; const ctx = cv.getContext('2d'), k = inkScale(cv);
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(k, 0, 0, k, 0, 0);
+  const L = INK.s[inkKey()] || []; if (!L.length) return inkLas(ctx);
+  const an = L.some(st => st.a) ? inkAnchors($('#inkw'), cv) : [], at = {}; an.forEach(b => { at[b.id] = b; });
+  L.forEach(st => { const b = st.a && at[st.a]; inkStroke(ctx, st, st.a ? (b ? [b.x, b.y] : st.o) : null); });
+  inkLas(ctx);
+}
+function inkLas(ctx) {
+  if (!INK.L.length) return; const now = performance.now();
+  INK.L.forEach(st => {
+    const p = st.p.map(q => [q[0] + st.o[0], q[1] + st.o[1]]), al = st.up ? Math.max(0, 1 - (now - st.up) / 400) : 1; if (!p.length || !al) return;
+    ctx.save(); ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = al; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(255,45,45,.85)'; ctx.shadowBlur = 12; ctx.strokeStyle = '#ff3b30'; ctx.lineWidth = 3.2;
+    ctx.beginPath(); ctx.moveTo(p[0][0], p[0][1]); if (p.length === 1) ctx.lineTo(p[0][0] + 0.1, p[0][1] + 0.1); for (let i = 1; i < p.length; i++) ctx.lineTo(p[i][0], p[i][1]); ctx.stroke();
+    if (!st.up) { const t = p[p.length - 1]; ctx.fillStyle = '#ff5a52'; ctx.beginPath(); ctx.arc(t[0], t[1], 4.5, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+  });
+}
+let inkLasR = 0;
+function inkLasFade() { // 뗀 레이저 선을 흐리게 지우기
+  cancelAnimationFrame(inkLasR);
+  const step = () => { const now = performance.now(); INK.L = INK.L.filter(st => !st.up || now - st.up < 400); inkDraw(); if (INK.L.some(st => st.up)) inkLasR = requestAnimationFrame(step); };
+  inkLasR = requestAnimationFrame(step);
 }
 let inkRO = null;
 function inkMount() {
   const w = $('#inkw'), cv = $('#ink'); if (inkRO) { inkRO.disconnect(); inkRO = null; } if (!w || !cv) return;
-  const size = () => { const dpr = window.devicePixelRatio || 1, W = w.offsetWidth, H = w.offsetHeight;
-    if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px'; }
+  const size = () => {
+    // 내용이 짧아도 화면 맨 아래까지 필기 영역으로 (아래 빈 곳에 손바닥이 닿아도 필기 영역 안)
+    const mh = INK.on || (INK.s[w.dataset.q] || []).length ? Math.max(0, Math.floor(window.innerHeight - (w.getBoundingClientRect().top + window.scrollY) - 12)) + 'px' : '';
+    if (w.style.minHeight !== mh) w.style.minHeight = mh;
+    const W = w.offsetWidth, H = w.offsetHeight; if (!W || !H) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, Math.sqrt(16e6 / (W * H))), cw = Math.floor(W * dpr), ch = Math.floor(H * dpr);
+    if (cv.width !== cw || cv.height !== ch || cv.style.width !== W + 'px' || cv.style.height !== H + 'px') { cv.width = cw; cv.height = ch; cv.style.width = W + 'px'; cv.style.height = H + 'px'; }
     inkDraw(); };
   size(); if (window.ResizeObserver) { inkRO = new ResizeObserver(size); inkRO.observe(w); }
-  let cur = null;
+  // iOS: 필기 중 터치가 스크롤·탭으로 넘어가지 않게 터치 기본 동작을 막는다
+  const stopTouch = e => { if (INK.on) e.preventDefault(); };
+  cv.addEventListener('touchstart', stopTouch, { passive: false });
+  cv.addEventListener('touchmove', stopTouch, { passive: false });
+  cv.addEventListener('touchend', stopTouch, { passive: false });
+  let cur = null, pan = null, penAt = 0, holdT = null, tp = null, lastTT = 0; const tch = new Set(), tpos = {};
+  const snapEnd = c => { const a = c.p[0], b = c.p[c.p.length - 1].slice(), dx = b[0] - a[0], dy = b[1] - a[1];
+    if (Math.abs(dy) < Math.abs(dx) * 0.105) b[1] = a[1]; else if (Math.abs(dx) < Math.abs(dy) * 0.105) b[0] = a[0]; // 6도 안쪽이면 가로·세로로 반듯하게
+    c.p = [a, b]; };
+  const toLine = c => { if (c !== cur || c.e || c.ln) return; const a = c.p[0], b = c.p[c.p.length - 1]; if (Math.hypot(b[0] - a[0], b[1] - a[1]) < 24) return; c.ln = 1; snapEnd(c); inkDraw(); };
   const pt = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * 10) / 10, Math.round((e.clientY - r.top) * 10) / 10]; };
+  const dropCur = () => { if (!cur) return; if (cur.las) { INK.L = INK.L.filter(x => x !== cur); cur = null; inkDraw(); return; } const l = INK.s[inkKey()] || [], i = l.indexOf(cur); if (i >= 0) l.splice(i, 1); cur = null; inkDraw(); };
+  const startPan = e => { pan = { id: e.pointerId, y: e.clientY, go: false }; try { cv.setPointerCapture(e.pointerId); } catch (_) {} };
   cv.onpointerdown = e => {
     if (!INK.on) return;
-    if (e.pointerType === 'pen') INK.pen = true; else if (e.pointerType === 'touch' && INK.pen) return;
-    e.preventDefault(); cv.setPointerCapture(e.pointerId);
-    const k = inkKey(); cur = { c: INK.col, e: INK.er, p: [pt(e)], id: e.pointerId }; (INK.s[k] = INK.s[k] || []).push(cur); inkDraw();
+    e.preventDefault();
+    inkFl++;
+    if (e.pointerType === 'pen') { if (!INK.pen) { let off = false; try { off = localStorage.getItem('rc_pen') === '0'; } catch (_) {} if (!off) penMode(true); } pan = null; penAt = Date.now(); if (cur && cur.t !== 'pen') dropCur(); }
+    else if (e.pointerType === 'touch') {
+      tch.add(e.pointerId); tpos[e.pointerId] = [e.clientX, e.clientY];
+      if (tch.size === 2) tp = { t: Date.now(), moved: false }; else if (tch.size > 2 && tp) tp.moved = true;
+      if (tch.size >= 2) { if (cur && cur.t === 'touch') dropCur(); if (!cur && Date.now() - penAt > 600) startPan(e); return; } // 두 손가락: 스크롤
+      if (INK.pen) { if (!cur && !pan && Date.now() - penAt > 400) startPan(e); return; } // 펜 모드: 한 손가락은 스크롤, 펜으로 쓰는 중 손바닥은 무시
+    }
+    if (cur) return;
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    const k = inkKey(), p0 = pt(e), b = inkPick(inkAnchors(w, cv), p0[0], p0[1]), o = b ? [b.x, b.y] : [0, 0];
+    if (INK.las) { cur = { las: 1, c: '#ff3b30', p: [p0], id: e.pointerId, t: e.pointerType, o: [0, 0] }; INK.L.push(cur); inkDraw(); return; }
+    cur = { c: INK.col, e: INK.er, p: [[p0[0] - o[0], p0[1] - o[1]]], id: e.pointerId, t: e.pointerType, a: b ? b.id : '', o }; (INK.s[k] = INK.s[k] || []).push(cur); w.classList.add('hasink'); inkDraw();
   };
   cv.onpointermove = e => {
+    if (e.pointerType === 'pen') penAt = Date.now();
+    if (tp && tpos[e.pointerId] && Math.hypot(e.clientX - tpos[e.pointerId][0], e.clientY - tpos[e.pointerId][1]) > 12) tp.moved = true;
+    if (pan && e.pointerId === pan.id) { e.preventDefault(); const dy = e.clientY - pan.y;
+      if (pan.go || Math.abs(dy) > 14) { pan.go = true; window.scrollBy(0, -dy); const tn = performance.now(); pan.v = -dy / Math.max(8, tn - (pan.t || tn - 16)); pan.t = tn; pan.y = e.clientY; } return; }
     if (!cur || e.pointerId !== cur.id) return; e.preventDefault();
-    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; (evs.length ? evs : [e]).forEach(ev => cur.p.push(pt(ev)));
-    const ctx = cv.getContext('2d'), dpr = window.devicePixelRatio || 1; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    inkStroke(ctx, { c: cur.c, e: cur.e, p: cur.p.slice(-evs.length - 1) });
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; (evs.length ? evs : [e]).forEach(ev => { const q = pt(ev); cur.p.push([q[0] - cur.o[0], q[1] - cur.o[1]]); });
+    if (cur.las) { inkDraw(); return; }
+    if (cur.ln) { snapEnd(cur); inkDraw(); return; }
+    { const q = cur.p[cur.p.length - 1]; if (!cur.h || Math.hypot(q[0] - cur.h[0], q[1] - cur.h[1]) > 4) { cur.h = q; clearTimeout(holdT); const c = cur; holdT = setTimeout(() => toLine(c), 450); } }
+    const ctx = cv.getContext('2d'), k = inkScale(cv); ctx.setTransform(k, 0, 0, k, 0, 0);
+    inkStroke(ctx, { c: cur.c, e: cur.e, p: cur.p.slice(-evs.length - 1) }, cur.o);
   };
-  cv.onpointerup = cv.onpointercancel = e => { if (cur && e.pointerId === cur.id) cur = null; };
+  cv.onpointerup = cv.onpointercancel = e => { if (e.pointerType === 'pen') penAt = Date.now(); tch.delete(e.pointerId); delete tpos[e.pointerId];
+    if (tp && !tch.size) { if (!tp.moved && Date.now() - tp.t < 350 && e.type === 'pointerup') { if (Date.now() - lastTT < 500) { lastTT = 0; inkUndo(); } else lastTT = Date.now(); } tp = null; }
+    if (pan && e.pointerId === pan.id) { if (pan.go && pan.t && performance.now() - pan.t < 80) inkFling(pan.v || 0); pan = null; } if (cur && e.pointerId === cur.id) { clearTimeout(holdT); delete cur.h; if (cur.las) { cur.up = performance.now(); inkLasFade(); } cur = null; } };
 }
+// 필기 중에는 필기 도구 말고는 아무것도 눌리지 않게 (보기·버튼·상단 버튼 포함)
+window.addEventListener('click', e => {
+  if (!INK.on || !$('#inkw')) return;
+  if (e.target && e.target.closest && e.target.closest('.inkbar, .inkbtn, #sheet')) return;
+  e.stopPropagation(); e.preventDefault();
+}, true);
 
 // ───────── 결과 ─────────
 function result() {
@@ -490,6 +616,7 @@ function stats() {
   <div class="card"><b>난이도별</b>${ds.map((x, i) => `<div style="margin-top:10px"><div class="top"><span>${DLABEL[i + 1]}</span><span class="sub">${pct(x.acc)} · ${x.solved}/${x.total}</span></div><div class="bar ${lvl(x.acc)}"><i style="width:${(x.acc || 0) * 100}%"></i></div></div>`).join('')}</div>
   <div class="card"><b>최근 14일</b>${days.length ? `<div style="display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:10px">${days.map(k => `<div style="flex:1;text-align:center"><div style="height:${S.days[k].n / maxN * 70}px;background:var(--pri);border-radius:4px 4px 0 0;opacity:${0.4 + 0.6 * S.days[k].c / S.days[k].n}"></div><div class="sub" style="font-size:9px">${k.slice(8)}</div></div>`).join('')}</div>` : '<div class="sub">아직 기록이 없어요</div>'}</div>
   ${S.mocks.length ? `<div class="card"><b>모의고사 기록</b><div class="list">${S.mocks.slice(-6).reverse().map(m => `<div class="it"><span>${m.date}</span><span>${m.c}/100 · 예상 ${m.score}점 <span class="sub">(P5 ${m.p5} · P6 ${m.p6} · P7 ${m.p7})</span></span></div>`).join('')}</div></div>` : ''}
+  ${S.diags.length ? `<div class="card"><b>진단평가 기록</b><div class="list">${S.diags.slice(-6).reverse().map(m => `<div class="it"><span>${m.date}</span><span>예상 ${m.score}점 <span class="sub">(${m.lo}~${m.hi} · ${m.c}/${m.N})</span></span></div>`).join('')}</div></div>` : ''}
   <h2>유형별</h2>
   <div class="seg">${[['weak', '약한 순'], ['all', '전체'], ['none', '안 푼 유형']].map(([v, l]) => `<button class="${STAB === v ? 'on' : ''}" onclick="STAB='${v}';render()">${l}</button>`).join('')}</div>
   ${list.length ? `<div class="cgrid">${list.map(x => conceptRow(x.c, x.s)).join('')}</div>` : '<div class="card sub">해당하는 유형이 없어요</div>'}`;
@@ -529,7 +656,7 @@ function startMock() {
   single.sort((x, y) => BY_G[x].length - BY_G[y].length); multi.sort((x, y) => PSG[x].docs.length - PSG[y].docs.length);
   const ids = [...a, ...[].concat(...s6.map(g => BY_G[g])), ...[].concat(...single.map(g => BY_G[g])), ...[].concat(...multi.map(g => BY_G[g]))];
   INK.s = {}; PSG_FULL = false;
-  MK_S = { ids, i: 0, ans: {}, end: Date.now() + 75 * 60 * 1000 };
+  MK_S = { ids, i: 0, ans: {}, end: Date.now() + 75 * 60 * 1000, T: 75 * 60 * 1000, kind: 'mock', base: 101 };
   go('mockrun');
   timerId = setInterval(() => { const el = $('#mt'); if (!MK_S) return; const left = MK_S.end - Date.now(); if (left <= 0) { submitMock(true); return; } if (el) el.textContent = fmtT(left); }, 1000);
 }
@@ -539,19 +666,19 @@ function mkTap(el, id, k) { MK_S.ans[id] = k; el.parentElement.querySelectorAll(
 function mockrun() {
   const [a, b] = grp(MK_S.ids, MK_S.i); if (MK_S.i !== a) MK_S.i = a;
   const gids = MK_S.ids.slice(a, b), q = QMAP[gids[0]], answered = Object.keys(MK_S.ans).length, N = MK_S.ids.length;
-  const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + 101}.</span></div><div class="q en">${qText(x)}</div>${x.o.map((t, k) => optHTML(x, k, MK_S.ans[id] === k ? 'sel' : '', '', `mkTap(this,${id},${k})`)).join('')}</div>`; }).join('')
+  const body = q.g ? gids.map((id, j) => { const x = QMAP[id]; return `<div class="sq"><div class="sq-h"><span class="sq-n">${a + j + MK_S.base}.</span></div><div class="q en">${qText(x)}</div>${x.o.map((t, k) => optHTML(x, k, MK_S.ans[id] === k ? 'sel' : '', '', `mkTap(this,${id},${k})`)).join('')}</div>`; }).join('')
     : q.o.map((t, k) => optHTML(q, k, MK_S.ans[q.id] === k ? 'sel' : '', '', `mkTap(this,${q.id},${k})`)).join('');
-  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
+  return `<div class="qbar"><div class="top"><button class="icon-btn" onclick="ask('${mkName()}를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', ()=>{MK_S=null;go('home')})">✕</button>
     <span class="timer" id="mt">${fmtT(MK_S.end - Date.now())}</span><button class="icon-btn" id="mkcnt" onclick="mockGrid()">${answered}/${N}</button></div></div>
-  <div class="sub" style="margin-top:10px">Part ${q.p} · ${b - a > 1 ? `${a + 101}–${b + 100}번` : `${a + 101}번`}</div>
-  <div class="qa"><div class="qa-l"><div class="top" style="justify-content:flex-end">${inkBar()}</div>
-  ${q.g ? psgHTML(q.g, null, true) : `<div class="inkw ${INK.on ? 'inking' : ''}" id="inkw" data-q="${q.id}"><div class="q en">${qText(q)}</div><canvas class="ink" id="ink"></canvas></div>`}</div><div class="qa-r">
+  <div class="sub" style="margin-top:10px">Part ${q.p} · ${b - a > 1 ? `${a + MK_S.base}–${b + MK_S.base - 1}번` : `${a + MK_S.base}번`}</div>
+  ${inkWrap('m' + gids[0], `<div class="qa"><div class="qa-l"><div class="top" style="justify-content:flex-end">${inkBar()}</div>
+  ${q.g ? psgHTML(q.g, null, true) : `<div class="qcard"><div class="q en">${qText(q)}</div></div>`}</div><div class="qa-r">
   ${body}
   <div class="grid2" style="margin-top:12px"><button class="btn line" ${a ? '' : 'disabled'} onclick="mkGo(grp(MK_S.ids, MK_S.i-1)[0])">이전</button>
-  ${b < N ? `<button class="btn" onclick="mkGo(${b})">다음</button>` : `<button class="btn" onclick="submitMock()">제출</button>`}</div></div></div>`;
+  ${b < N ? `<button class="btn" onclick="mkGo(${b})">다음</button>` : `<button class="btn" onclick="submitMock()">제출</button>`}</div></div></div>`)}`;
 }
 function mockGrid() {
-  sheet(`<b>문항 이동</b><div style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:12px 0">${MK_S.ids.map((id, i) => `<button class="chip ${MK_S.ans[id] != null ? 'on' : ''}" style="margin:0;padding:7px 0;font-size:12px" onclick="closeSheet();mkGo(${i})">${i + 101}</button>`).join('')}</div>
+  sheet(`<b>문항 이동</b><div style="display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin:12px 0">${MK_S.ids.map((id, i) => `<button class="chip ${MK_S.ans[id] != null ? 'on' : ''}" style="margin:0;padding:7px 0;font-size:12px" onclick="closeSheet();mkGo(${i})">${i + MK_S.base}</button>`).join('')}</div>
   <button class="btn" onclick="closeSheet();submitMock()">제출하고 채점</button>`);
 }
 function submitMock(auto, force) {
@@ -562,7 +689,8 @@ function submitMock(auto, force) {
   MK_S.ids.forEach(id => { const q = QMAP[id], ok = MK_S.ans[id] === q.a; if (MK_S.ans[id] != null) record(id, ok); else { const a = S.att[id] || (S.att[id] = { n: 0, c: 0, st: 0, w: false, wr: 0 }); a.w = true; a.wr++; } if (ok) by[q.p]++; else wrongs.push(id); });
   const c = by[5] + by[6] + by[7], score = estScore(c * 100 / N);
   const tot = p => MK_S.ids.filter(id => QMAP[id].p === p).length;
-  const r = { date: today(), c, score, p5: by[5], p6: by[6], p7: by[7], t5: tot(5), t6: tot(6), t7: tot(7), wrongs, used: Math.round((75 * 60 * 1000 - Math.max(0, MK_S.end - Date.now())) / 60000) };
+  const r = { date: today(), c, score, p5: by[5], p6: by[6], p7: by[7], t5: tot(5), t6: tot(6), t7: tot(7), wrongs, used: Math.round((MK_S.T - Math.max(0, MK_S.end - Date.now())) / 60000) };
+  if (MK_S.kind === 'diag') return diagDone(r);
   S.mocks.push({ date: r.date, c, score, p5: by[5], p6: by[6], p7: by[7] }); save();
   MK_S = null; go('mockresult', r);
 }
@@ -575,6 +703,61 @@ function mockresult() {
   ${Object.keys(byC).length ? `<h2>틀린 유형</h2><div class="cgrid">${Object.entries(byC).sort((a, b) => b[1] - a[1]).map(([c, n]) => `<div class="card" onclick="go('concept',{id:'${c}'})"><div class="top"><b><span class="tag">P${CMAP[c].p}</span>${esc(CMAP[c].name)}</b><span class="sub">${n}문제</span></div></div>`).join('')}</div>` : ''}
   ${r.wrongs.length ? `<button class="btn" onclick="QS={ids:${JSON.stringify(r.wrongs)},i:0,mode:'wrong',res:{},picks:{},pick:null,shown:false,title:'모의고사 오답'};go('quiz')">틀린 ${r.wrongs.length}문제 해설 보며 다시 풀기</button>` : ''}
   <button class="btn line" style="margin-top:10px" onclick="go('home')">홈으로</button>`;
+}
+
+// ───────── 진단평가 (50문항 · 37분 30초) ─────────
+// 실제 RC 구성비를 절반으로: Part 5 15 · Part 6 2지문 8 · Part 7 27(단일 → 복수)
+// 점수는 난이도 가중 정답률을 모의고사와 같은 환산표에 넣고, 문항 수가 적은 만큼 ±1 표준오차를 범위로 보여 준다.
+const DIAG_T = 37.5 * 60 * 1000, DIAG_W = { 1: 0.8, 2: 1, 3: 1.15, 4: 1.3 };
+const mkName = () => MK_S && MK_S.kind === 'diag' ? '진단평가' : '모의고사';
+function diag() {
+  const L = S.diags, last = L[L.length - 1];
+  return `<button class="icon-btn" onclick="go('home')">← 홈</button><h1>진단평가</h1>
+  <div class="sub" style="margin-bottom:6px">50문항으로 지금 RC가 몇 점쯤인지 알아봐요</div>
+  <div class="card"><ul class="sum"><li>실제 RC 구성비 그대로 절반: Part 5 15 · Part 6 2지문 8 · Part 7 27</li><li>제한 시간 37분 30초 (실전과 같은 속도), 시간이 다 되면 자동 제출</li><li>기본~최고난도를 고르게 섞고, 안 푼 문제 위주로 뽑아요</li><li>어려운 문제를 맞히면 점수에 조금 더 반영돼요</li><li>문항이 50개라 예상 점수는 범위로 보여 줘요. 실제 성적과 다를 수 있어요</li></ul></div>
+  ${last ? `<div class="sub" style="margin:4px 2px 10px">최근: ${last.date} · ${last.c}/${last.N} · 예상 ${last.score}점 (${last.lo}~${last.hi})</div>` : ''}
+  <button class="btn" onclick="startDiag()">시작</button>`;
+}
+function startDiag() {
+  const p5 = BANK.filter(q => q.p === 5), want = { 1: 2, 2: 5, 3: 6, 4: 2 };
+  let a = []; [1, 2, 3, 4].forEach(d => { const pool = p5.filter(q => q.d === d); a = a.concat([...shuffle(pool.filter(q => !S.att[q.id])), ...shuffle(pool.filter(q => S.att[q.id]))].slice(0, want[d])); });
+  if (a.length < 15) a = a.concat(shuffle(p5.filter(q => !a.includes(q))).slice(0, 15 - a.length));
+  a = shuffle(a).map(q => q.id);
+  const s6 = pickSets(6, 8), multi = pickSets(7, 10, g => PSG[g].docs.length > 1), single = pickSets(7, 27 - multi.reduce((n, g) => n + BY_G[g].length, 0), g => PSG[g].docs.length === 1);
+  single.sort((x, y) => BY_G[x].length - BY_G[y].length); multi.sort((x, y) => PSG[x].docs.length - PSG[y].docs.length);
+  const ids = [...a, ...[].concat(...s6.map(g => BY_G[g])), ...[].concat(...single.map(g => BY_G[g])), ...[].concat(...multi.map(g => BY_G[g]))];
+  INK.s = {}; PSG_FULL = false;
+  MK_S = { ids, i: 0, ans: {}, end: Date.now() + DIAG_T, T: DIAG_T, kind: 'diag', base: 1 };
+  go('mockrun');
+  timerId = setInterval(() => { const el = $('#mt'); if (!MK_S) return; const left = MK_S.end - Date.now(); if (left <= 0) { submitMock(true); return; } if (el) el.textContent = fmtT(left); }, 1000);
+}
+function diagEst(ids, ans) {
+  let w = 0, wc = 0; ids.forEach(id => { const q = QMAP[id], k = DIAG_W[q.d] || 1; w += k; if (ans[id] === q.a) wc += k; });
+  const p = w ? wc / w : 0, se = Math.sqrt(Math.max(p * (1 - p), 0.04) / ids.length);
+  return { score: estScore(p * 100), lo: estScore(Math.max(0, p - se) * 100), hi: estScore(Math.min(1, p + se) * 100) };
+}
+function diagDone(r) {
+  const ids = MK_S.ids, ans = MK_S.ans, e = diagEst(ids, ans);
+  const dd = [1, 2, 3, 4].map(d => { const x = ids.filter(id => QMAP[id].d === d); return [x.filter(id => ans[id] === QMAP[id].a).length, x.length]; });
+  Object.assign(r, e, { N: ids.length, dd, skip: ids.filter(id => ans[id] == null).length, sec: Math.round((MK_S.T - Math.max(0, MK_S.end - Date.now())) / 1000) });
+  S.diags.push({ date: r.date, c: r.c, N: r.N, score: r.score, lo: r.lo, hi: r.hi, p5: r.p5, p6: r.p6, p7: r.p7 }); save();
+  MK_S = null; go('diagresult', r);
+}
+function diagresult() {
+  const r = P, byC = {}; r.wrongs.forEach(id => { const c = QMAP[id].c; byC[c] = (byC[c] || 0) + 1; });
+  const mm = s => `${Math.floor(s / 60)}분${s % 60 ? ' ' + (s % 60) + '초' : ''}`;
+  const pace = r.skip ? `안 푼 ${r.skip}문제는 오답으로 계산했어요. 실전에선 Part 7 뒤쪽이 이렇게 비기 쉬워요.` : r.sec > DIAG_T / 1000 - 60 ? '시간을 거의 다 썼어요. 실전에선 Part 5를 조금 더 빨리 넘겨야 Part 7에 여유가 생겨요.' : '시간 안에 다 풀었어요.';
+  return `<h1>진단평가 결과</h1>
+  <div class="card" style="text-align:center"><div class="sub">예상 RC 점수</div><div class="big">${r.score}</div>
+  <div style="margin-top:6px"><span class="pill">${r.lo} ~ ${r.hi}점</span></div>
+  <div class="sub" style="margin-top:8px">${r.N}문항 중 ${r.c}개 정답 · ${mm(r.sec)} 사용</div>
+  <div class="grid3" style="margin-top:14px"><div class="stat"><b>${r.p5}/${r.t5}</b><span>Part 5</span></div><div class="stat"><b>${r.p6}/${r.t6}</b><span>Part 6</span></div><div class="stat"><b>${r.p7}/${r.t7}</b><span>Part 7</span></div></div></div>
+  <div class="card"><b>난이도별</b>${r.dd.map(([c, n], i) => n ? `<div style="margin-top:10px"><div class="top"><span>${DLABEL[i + 1]}</span><span class="sub">${c}/${n}</span></div><div class="bar ${lvl(c / n)}"><i style="width:${c / n * 100}%"></i></div></div>` : '').join('')}
+  <div class="sub" style="margin-top:12px">${pace}</div></div>
+  ${Object.keys(byC).length ? `<h2>틀린 유형</h2><div class="cgrid">${Object.entries(byC).sort((a, b) => b[1] - a[1]).map(([c, n]) => `<div class="card" onclick="go('concept',{id:'${c}'})"><div class="top"><b><span class="tag">P${CMAP[c].p}</span>${esc(CMAP[c].name)}</b><span class="sub">${n}문제</span></div></div>`).join('')}</div>` : ''}
+  ${r.wrongs.length ? `<button class="btn" onclick="QS={ids:${JSON.stringify(r.wrongs)},i:0,mode:'wrong',res:{},picks:{},pick:null,shown:false,title:'진단평가 오답'};go('quiz')">틀린 ${r.wrongs.length}문제 해설 보며 다시 풀기</button>` : ''}
+  <button class="btn line" style="margin-top:10px" onclick="go('home')">홈으로</button>
+  <div class="sub" style="text-align:center;margin-top:14px">범위는 문항 수가 적어 생기는 오차예요. 2~3주 간격으로 다시 보면 변화가 보여요.</div>`;
 }
 
 // ───────── 단어 카드 ─────────
@@ -714,7 +897,7 @@ render();
 window.androidBack = function () {
   if ($('#sheet')) return closeSheet();
   if (document.getElementById('wpop')) return closePop();
-  if (view === 'mockrun') return ask('모의고사를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', () => { MK_S = null; go('home'); });
+  if (view === 'mockrun') return ask(mkName() + '를 그만둘까요? 이번 풀이는 저장되지 않아요.', '그만두기', () => { MK_S = null; go('home'); });
   if (view === 'flash' && FC) { FC = null; return render(); }
   const up = { quiz: 'practice', result: 'practice', concept: 'concepts' }[view];
   if (up) return go(up);
