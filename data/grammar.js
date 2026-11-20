@@ -28,7 +28,9 @@ window.GRAMMAR = {
     { h: '-ing / -ed 분사형 형용사', p: '감정 동사는 사람이 느끼면 -ed, 감정을 일으키는 대상이면 -ing. 일반 동사는 꾸미는 명사가 그 동작을 하면 -ing, 당하면 -ed.',
       ex: [['**The results** were **disappointing**.', '결과가 **실망스러웠다**.'], ['Only **qualified candidates** will be contacted.', '**자격을 갖춘 후보자**에게만 연락한다.'], ['the **remaining balance**', '**남은** 잔액']] },
     { h: '모양이 닮은 형용사 쌍', p: '어근이 같아도 뜻이 다릅니다. 문맥에 넣어 뜻으로 고르세요.',
-      ex: [['She was **considerate** of her colleagues.', '그녀는 동료들을 **배려했다**. (considerable ✕)'], ['an **economical** car', '**연비 좋은(경제적인)** 차 (economic: 경제의)']] }
+      ex: [['She was **considerate** of her colleagues.', '그녀는 동료들을 **배려했다**. (considerable ✕)'], ['an **economical** car', '**연비 좋은(경제적인)** 차 (economic: 경제의)']] },
+    { h: '가목적어 it: make it + 형용사 + to do', p: 'make, find, consider, think, deem 뒤에 to부정사나 that절이 목적어로 오면 그 자리에 it을 두고 진짜 목적어는 뒤로 보냅니다. 빈칸이 it 바로 뒤면 형용사 자리, it이 빠져 있으면 it을 고르는 문제예요.',
+      ex: [['The new system **makes it easier** for staff **to track** orders.', '새 시스템 덕분에 직원들이 주문을 **추적하기가 더 쉬워졌다**.'], ['Many customers **found it difficult to navigate** the old Web site.', '많은 고객이 예전 웹사이트를 **이용하기 어렵다고 느꼈다**.']] },
   ],
   listTitle: '자주 나오는 형용사 쌍',
   list: [['considerable / considerate', '상당한 / 사려 깊은'], ['reliable / reliant', '믿을 만한 / 의존하는'], ['economic / economical', '경제의 / 절약하는'], ['comprehensive / comprehensible', '포괄적인 / 이해할 수 있는'], ['successive / successful', '연속적인 / 성공적인'], ['respective / respectful', '각각의 / 공손한'], ['confident / confidential', '자신 있는 / 기밀의'], ['industrial / industrious', '산업의 / 근면한'], ['sensitive / sensible', '민감한 / 분별 있는'], ['dependable / dependent', '믿을 만한 / 의존적인'], ['timely', '시기적절한 (형용사)'], ['costly', '비싼 (형용사)'], ['experienced', '경험 많은'], ['detailed', '상세한'], ['complimentary', '무료의, 칭찬하는'], ['complementary', '보완하는']]
@@ -45,7 +47,11 @@ window.GRAMMAR = {
     { h: '-ly 유무로 뜻이 바뀌는 부사', p: 'hard/hardly, late/lately, close/closely, high/highly, near/nearly. -ly가 붙으면 전혀 다른 뜻이 됩니다.',
       ex: [['We could **hardly** hear the speaker.', '연사 말이 **거의 들리지 않았다**.'], ['Monitor the results **closely**.', '결과를 **면밀히** 지켜보세요.']] },
     { h: '접속부사는 접속사가 아니다', p: 'however, therefore, otherwise, moreover, consequently는 부사라 두 절을 연결하지 못합니다. 앞에 세미콜론이나 마침표가 있어야 해요.',
-      ex: [['Book early; **otherwise**, seats may sell out.', '일찍 예약하세요. **그렇지 않으면** 매진될 수 있습니다.']] }
+      ex: [['Book early; **otherwise**, seats may sell out.', '일찍 예약하세요. **그렇지 않으면** 매진될 수 있습니다.']] },
+    { h: 'hardly · barely · rarely는 not과 같이 안 쓴다', p: 'hardly, barely, scarcely, rarely, seldom은 그 자체로 부정 뜻이라 not, never와 겹쳐 쓰지 않습니다. 보통 조동사·be동사 뒤, 일반동사 앞에 옵니다.',
+      ex: [['The old copier is **hardly used** anymore.', '예전 복사기는 이제 **거의 쓰이지 않는다**.'], ['Ms. Park **rarely misses** a deadline.', '박 씨는 마감을 **좀처럼 놓치지 않는다**.']] },
+    { h: 'already · yet · still은 문장이 긍정인지 부정인지로', p: 'already는 긍정문(have already p.p.), yet은 부정·의문문 끝(have not p.p. yet)이나 have yet to do(아직 ~하지 않았다), still은 부정어 앞(still have not). 셋이 보기에 같이 나오면 문장의 긍정·부정부터 확인하세요.',
+      ex: [['The committee **has yet to make** a final decision.', '위원회는 **아직** 최종 결정을 **내리지 않았다**.'], ['We **still have not received** the invoice.', '우리는 **아직도** 청구서를 **받지 못했다**.']] },
   ],
   listTitle: '뜻으로 묻는 빈출 부사',
   list: [['shortly', '곧 (shortly after: 직후)'], ['promptly', '신속히, 정각에'], ['formerly', '이전에'], ['previously', '이전에'], ['lately / recently', '최근에 (현재완료와 함께)'], ['hardly / barely / scarcely', '거의 ~않다'], ['nearly / almost', '거의'], ['approximately / roughly', '대략'], ['exclusively', '오로지, 독점적으로'], ['temporarily', '일시적으로'], ['consistently', '한결같이'], ['substantially', '상당히'], ['tentatively', '잠정적으로'], ['respectively', '각각'], ['accordingly', '그에 맞게'], ['otherwise', '그렇지 않으면, 달리'], ['still', '여전히 (부정문 앞)'], ['yet', '아직 (부정문 끝)']]
@@ -60,7 +66,9 @@ window.GRAMMAR = {
     { h: '대상의 수·성 일치', p: '회사·부서·위원회는 it/its, 복수 명사는 they/their. 앞에 나온 명사 중 무엇을 가리키는지 먼저 찾으세요.',
       ex: [['**The committee** announced **its** decision.', '**위원회**가 결정을 발표했다.'], ['**Employees** must update **their** passwords.', '**직원**은 비밀번호를 갱신해야 한다.']] },
     { h: 'those who / anyone who', p: '"~하는 사람들"은 those who + 복수 동사. them who는 쓰지 않습니다. 앞 명사 반복은 that/those (of).',
-      ex: [['**Those who register** early receive a discount.', '일찍 **등록하는 사람**은 할인을 받는다.'], ['This year\'s **sales** exceeded **those of** last year.', '올해 매출이 **작년 매출**을 넘었다.']] }
+      ex: [['**Those who register** early receive a discount.', '일찍 **등록하는 사람**은 할인을 받는다.'], ['This year\'s **sales** exceeded **those of** last year.', '올해 매출이 **작년 매출**을 넘었다.']] },
+    { h: 'another · the other · others · the others', p: '정해지지 않은 하나 더는 another(+단수), 둘 중 나머지 하나는 the other, 정해지지 않은 여럿은 others, 나머지 전부는 the others. other는 혼자 못 쓰고 뒤에 복수 명사가 와야 합니다. 단, another two weeks처럼 another + 숫자 + 복수는 "추가로 ~"라는 덩어리라 가능해요.',
+      ex: [['One printer is broken, but **the other** works fine.', '프린터 한 대는 고장 났지만 **나머지 한 대**는 잘 된다.'], ['Some attendees left early, while **others** stayed for the reception.', '일부 참석자는 일찍 떠났고 **다른 사람들**은 환영회까지 남았다.'], ['Please allow **another two weeks** for delivery.', '배송까지 **2주를 더** 기다려 주세요.']] },
   ],
   listTitle: '부정대명사 핵심',
   list: [['one / another / the other', '하나 / 또 하나 / (둘 중) 나머지 하나'], ['others / the others', '다른 것들 / 나머지 전부'], ['each other / one another', '서로'], ['each of + 복수명사', '단수 동사'], ['either / neither', '둘 중 하나 / 둘 다 아님'], ['none of', '아무도 ~않다'], ['some / any', '긍정 / 부정·의문·조건'], ['on one\'s own', '혼자 힘으로'], ['by oneself', '혼자, 직접'], ['of one\'s own', '자기 소유의']]
@@ -126,10 +134,16 @@ window.GRAMMAR = {
     { h: '가정법 과거 / 과거완료', p: '현재 사실 반대: If + 과거, would + 원형. 과거 사실 반대: If + had p.p., would have p.p.',
       ex: [['**If** we **had** more staff, we **would open** on Sundays.', '직원이 더 **있다면** 일요일에도 **열 텐데**.'], ['**If** the order **had arrived** on time, we **would have met** the deadline.', '주문품이 제때 **왔다면** 마감을 **지켰을 것이다**.']] },
     { h: 'If 생략 도치', p: 'Should + 주어 + 원형(혹시 ~하면), Had + 주어 + p.p., Were + 주어. 문두에 Should/Had가 보이면 도치 가정법입니다.',
-      ex: [['**Should you have** any questions, please call us.', '문의 사항이 **있으시면** 전화 주세요.'], ['**Had I known**, I **would have helped**.', '**알았더라면** 도왔을 텐데.']] }
+      ex: [['**Should you have** any questions, please call us.', '문의 사항이 **있으시면** 전화 주세요.'], ['**Had I known**, I **would have helped**.', '**알았더라면** 도왔을 텐데.']] },
+    { h: '부정어가 문두에 오면 도치', p: 'Not until, Only after/when, Never, Rarely, Seldom, Hardly ~ when, No sooner ~ than이 문장 맨 앞에 오면 뒤는 의문문 어순(조동사 + 주어 + 동사원형)이 됩니다. 빈칸 뒤 어순이 어색하면 이것부터 의심하세요.',
+      ex: [['**Not until** the contract was signed **did the company announce** the merger.', '계약서에 서명하고 **나서야** 회사는 합병을 **발표했다**.'], ['**Only after** the inspection is complete **will the building reopen**.', '점검이 끝난 **뒤에야** 건물이 **다시 문을 연다**.']] },
+    { h: '보어가 앞으로 나오는 도치: Attached is ~', p: 'Attached, Enclosed, Included, Listed below 같은 분사가 문두에 오면 "분사 + be동사 + 주어" 어순입니다. be동사의 수는 뒤에 오는 주어에 맞춥니다.',
+      ex: [['**Enclosed are** two **copies** of the signed agreement.', '서명된 계약서 사본 두 부를 **동봉합니다**.'], ['**Attached is** the revised **schedule** for next week.', '다음 주 수정 일정표를 **첨부합니다**.']] },
+    { h: 'so / neither / nor + 조동사 + 주어', p: '"~도 그렇다"는 긍정이면 so, 부정이면 neither나 nor. 뒤는 조동사(be·do 포함) + 주어 순서입니다.',
+      ex: [['The sales team met its target, and **so did the marketing team**.', '영업팀이 목표를 달성했고 **마케팅팀도 그랬다**.'], ['Ms. Cole did not attend the seminar, and **neither did her assistant**.', '콜 씨는 세미나에 오지 않았고 **비서도 마찬가지였다**.']] },
   ],
   listTitle: 'that절에 원형을 부르는 말',
-  list: [['request / require / ask', '요청하다 / 요구하다'], ['recommend / suggest / advise', '권하다 / 제안하다'], ['insist / demand', '주장하다 / 요구하다'], ['propose / urge', '제안하다 / 촉구하다'], ['essential / imperative', '필수적인 / 꼭 해야 하는'], ['necessary / vital / crucial', '필요한 / 중요한'], ['important / advisable', '중요한 / 바람직한'], ['Should you need ~', '혹시 ~가 필요하면'], ['Had it not been for ~', '~이 없었더라면'], ['as if + 과거', '마치 ~인 것처럼']]
+  list: [['request / require / ask', '요청하다 / 요구하다'], ['recommend / suggest / advise', '권하다 / 제안하다'], ['insist / demand', '주장하다 / 요구하다'], ['propose / urge', '제안하다 / 촉구하다'], ['essential / imperative', '필수적인 / 꼭 해야 하는'], ['necessary / vital / crucial', '필요한 / 중요한'], ['important / advisable', '중요한 / 바람직한'], ['Should you need ~', '혹시 ~가 필요하면'], ['Had it not been for ~', '~이 없었더라면'], ['as if + 과거', '마치 ~인 것처럼'], ['Not until A + 도치', 'A하고 나서야 비로소'], ['Only + 부사구 + 도치', '~해야만, ~하고서야'], ['Hardly had S p.p. when ~', '~하자마자'], ['No sooner had S p.p. than ~', '~하자마자'], ['Enclosed / Attached is(are) + 주어', '~을 동봉 / 첨부합니다']]
 },
 'p5-inf': {
   intro: 'to부정사는 **동사가 목적어로 무엇을 취하는가**와 **목적·의도의 의미**를 묻습니다.',
@@ -141,10 +155,12 @@ window.GRAMMAR = {
     { h: '목적: (in order) to / so as to', p: '완전한 문장 뒤에 빈칸 + 동사원형이 오면 목적의 to부정사. 문두에도 올 수 있습니다.',
       ex: [['**To qualify** for the discount, order before Friday.', '할인을 **받으려면** 금요일 전에 주문하세요.'], ['We extended our hours **in order to serve** more customers.', '고객을 더 **받으려고** 영업시간을 늘렸다.']] },
     { h: '명사·형용사 + to do', p: 'ability, effort, plan, opportunity, decision + to do / be able, eager, likely, willing, reluctant + to do.',
-      ex: [['in an **effort to reduce** costs', '비용을 **줄이려는 노력**의 일환으로'], ['Customers are **likely to return**.', '고객들이 다시 **올 가능성이 높다**.']] }
+      ex: [['in an **effort to reduce** costs', '비용을 **줄이려는 노력**의 일환으로'], ['Customers are **likely to return**.', '고객들이 다시 **올 가능성이 높다**.']] },
+    { h: '사역·지각동사 + 목적어 + 원형 / p.p.', p: 'make, have, let + 목적어 + 동사원형. 목적어가 당하는 입장이면 have/get + 목적어 + p.p.입니다. get은 to do, help는 원형과 to do 둘 다 받습니다. 수동태가 되면 원형이 to do로 바뀌어요(be made to do).',
+      ex: [['The manager **had the technician check** the wiring.', '관리자는 기술자에게 배선을 **점검하게 했다**.'], ['We **had the documents translated** into Spanish.', '서류를 스페인어로 **번역되게 맡겼다**.'], ['The new software **helps employees track** their hours.', '새 소프트웨어는 직원들이 근무 시간을 **기록하도록 돕는다**.']] },
   ],
   listTitle: 'to부정사와 짝인 표현',
-  list: [['be about to do', '막 ~하려 하다'], ['be eager to do', '몹시 ~하고 싶어하다'], ['be reluctant to do', '~하기를 꺼리다'], ['be eligible to do', '~할 자격이 있다'], ['be supposed to do', '~하기로 되어 있다'], ['in an effort to do', '~하려는 노력으로'], ['have yet to do', '아직 ~하지 않았다'], ['the first / last to do', '처음으로 / 마지막으로 ~한'], ['opportunity to do', '~할 기회'], ['strive to do', '~하려고 애쓰다'], ['hesitate to do', '~하기를 망설이다'], ['afford to do', '~할 여유가 있다']]
+  list: [['be about to do', '막 ~하려 하다'], ['be eager to do', '몹시 ~하고 싶어하다'], ['be reluctant to do', '~하기를 꺼리다'], ['be eligible to do', '~할 자격이 있다'], ['be supposed to do', '~하기로 되어 있다'], ['in an effort to do', '~하려는 노력으로'], ['have yet to do', '아직 ~하지 않았다'], ['the first / last to do', '처음으로 / 마지막으로 ~한'], ['opportunity to do', '~할 기회'], ['strive to do', '~하려고 애쓰다'], ['hesitate to do', '~하기를 망설이다'], ['afford to do', '~할 여유가 있다'], ['let + O + 원형', '~하게 허락하다 (to 불가)'], ['have / get + O + p.p.', 'O가 ~되게 하다'], ['help + O + (to) 원형', 'O가 ~하는 것을 돕다'], ['be made to do', '~하도록 시킴을 받다 (수동은 to)']]
 },
 'p5-ger': {
   intro: '동명사는 **전치사 뒤**, **특정 동사 뒤**, 그리고 **to가 전치사인 표현** 세 곳이 출제 포인트입니다.',
@@ -171,10 +187,12 @@ window.GRAMMAR = {
     { h: '접속사 + 분사', p: 'when, while, before, after, once, unless, as + 분사. 접속사를 남겨 의미를 분명히 한 형태입니다.',
       ex: [['**When completed**, the bridge will be the longest in the region.', '**완공되면** 그 다리는 지역에서 가장 길다.'], ['Please read the manual **before operating** the machine.', '기계를 **작동하기 전에** 설명서를 읽으세요.']] },
     { h: 'with + 명사 + 분사', p: '"~가 ~한 채로". 명사와 분사의 관계(능동/수동)로 형태를 고릅니다.',
-      ex: [['**With prices rising**, sales slowed.', '**가격이 오르면서** 판매가 둔화되었다.'], ['**with** all **costs included**', '모든 **비용이 포함된 채로**']] }
+      ex: [['**With prices rising**, sales slowed.', '**가격이 오르면서** 판매가 둔화되었다.'], ['**with** all **costs included**', '모든 **비용이 포함된 채로**']] },
+    { h: '완료·수동 분사구문: Having p.p. / p.p.', p: '주절보다 먼저 일어난 일은 Having p.p., 주절 주어가 당하는 입장이면 (Having been) p.p.로 시작합니다. 문두 빈칸 뒤에 목적어가 있으면 Having p.p., 없으면 p.p.를 고르세요.',
+      ex: [['**Having reviewed** the proposal, the board approved the budget.', '제안서를 **검토한 뒤** 이사회는 예산을 승인했다.'], ['**Founded** in 1998, the company now has offices in ten countries.', '1998년에 **설립된** 그 회사는 현재 10개국에 사무소가 있다.']] },
   ],
   listTitle: '토익 단골 분사 형용사',
-  list: [['attached / enclosed', '첨부된 / 동봉된'], ['updated / revised', '갱신된 / 수정된'], ['proposed', '제안된'], ['designated', '지정된'], ['estimated', '추정된'], ['existing', '기존의'], ['leading', '선도하는'], ['remaining', '남아 있는'], ['rewarding', '보람 있는'], ['demanding', '까다로운'], ['outstanding', '뛰어난, 미지불의'], ['missing', '빠진, 분실된'], ['dedicated', '헌신적인, 전용의'], ['accomplished', '숙련된']]
+  list: [['attached / enclosed', '첨부된 / 동봉된'], ['updated / revised', '갱신된 / 수정된'], ['proposed', '제안된'], ['designated', '지정된'], ['estimated', '추정된'], ['existing', '기존의'], ['leading', '선도하는'], ['remaining', '남아 있는'], ['rewarding', '보람 있는'], ['demanding', '까다로운'], ['outstanding', '뛰어난, 미지불의'], ['missing', '빠진, 분실된'], ['dedicated', '헌신적인, 전용의'], ['accomplished', '숙련된'], ['Weather permitting', '날씨가 허락하면'], ['Generally speaking', '일반적으로 말해'], ['Given (that) ~', '~을 고려하면'], ['Considering ~', '~을 감안하면']]
 },
 'p5-prepconj': {
   intro: '같은 뜻의 전치사와 접속사가 보기에 함께 나오면 **빈칸 뒤가 명사(구)인지 절(주어+동사)인지**만 보면 됩니다.',
@@ -233,7 +251,9 @@ window.GRAMMAR = {
     { h: '의문사절은 평서문 어순', p: 'how, when, where, why, who가 명사절을 이끌면 "의문사 + 주어 + 동사".',
       ex: [['Please tell us **when the shipment will arrive**.', '배송이 **언제 도착하는지** 알려 주세요.'], ['The guide explains **how the system works**.', '안내서에 시스템 **작동 방식**이 나와 있다.']] },
     { h: '복합관계사 (-ever)', p: 'whoever(~하는 누구든), whatever(~하는 무엇이든). 명사절과 부사절 둘 다 가능.',
-      ex: [['**Whoever finishes** first may leave early.', '먼저 **끝내는 사람**은 일찍 가도 된다.'], ['Choose **whichever plan** suits you.', '맞는 요금제를 **아무거나** 고르세요.']] }
+      ex: [['**Whoever finishes** first may leave early.', '먼저 **끝내는 사람**은 일찍 가도 된다.'], ['Choose **whichever plan** suits you.', '맞는 요금제를 **아무거나** 고르세요.']] },
+    { h: '동격 that: the fact that + 완전한 절', p: 'fact, news, idea, assurance, notice, possibility, condition 같은 명사 뒤 that은 앞 명사의 내용을 풀어 주는 동격절입니다. 관계대명사와 달리 뒤가 완전한 절이고, which나 what으로 바꿀 수 없어요.',
+      ex: [['**The fact that** the project finished early impressed the client.', '프로젝트가 일찍 끝났다는 **사실이** 고객에게 좋은 인상을 줬다.'], ['We received **assurance that** the parts **will arrive** by Friday.', '부품이 금요일까지 도착한다는 **확답을** 받았다.']] },
   ],
   listTitle: '명사절 접속사 구분',
   list: [['that + 완전한 절', '~라는 것'], ['what + 불완전한 절', '~하는 것'], ['whether (or not)', '~인지 아닌지'], ['if', '~인지 (목적어 자리만)'], ['how + 형용사/부사', '얼마나 ~한지'], ['the fact that', '~라는 사실'], ['whoever', '~하는 사람은 누구든'], ['whatever', '~하는 것은 무엇이든'], ['whichever', '어느 것이든'], ['whether to do', '~할지 말지']]
@@ -250,7 +270,9 @@ window.GRAMMAR = {
     { h: 'the 비교급, the 비교급', p: '"~할수록 더 ~하다". 앞뒤 모두 the + 비교급.',
       ex: [['**The earlier** you register, **the lower** the fee.', '**일찍 등록할수록** 비용이 **낮다**.']] },
     { h: '비교 대상 일치', p: '비교되는 두 대상은 같은 종류여야 해서 that of / those of로 받습니다.',
-      ex: [['Our **prices** are lower than **those of** our competitors.', '우리 가격은 **경쟁사 가격**보다 낮다.']] }
+      ex: [['Our **prices** are lower than **those of** our competitors.', '우리 가격은 **경쟁사 가격**보다 낮다.']] },
+    { h: '라틴어 비교·배수·관용 원급', p: 'superior, inferior, prior, senior, junior, preferable은 than 대신 to를 씁니다. 배수는 "twice / three times + as ~ as" 순서. as many as + 숫자는 "무려 ~나", no later than은 "늦어도 ~까지(= by)".',
+      ex: [['The new model is **superior to** its predecessor in every way.', '신모델은 모든 면에서 이전 모델**보다 뛰어나다**.'], ['Applications must be submitted **no later than** May 31.', '지원서는 **늦어도** 5월 31일**까지** 내야 한다.'], ['This year\'s budget is **twice as large as** last year\'s.', '올해 예산은 작년의 **두 배다**.']] },
   ],
   listTitle: '비교 관용 표현',
   list: [['no later than', '늦어도 ~까지'], ['no longer', '더 이상 ~않다'], ['more than / less than', '~이상 / ~미만'], ['as early as', '빠르면 ~에'], ['as soon as possible', '가능한 한 빨리'], ['twice as ~ as', '~의 두 배만큼'], ['one of the + 최상급 + 복수', '가장 ~한 것 중 하나'], ['at least / at most', '적어도 / 많아야'], ['rather than', '~보다는'], ['the second largest', '두 번째로 큰'], ['superior / inferior to', '~보다 우수한 / 열등한'], ['prior to', '~ 전에']]
@@ -291,10 +313,14 @@ window.GRAMMAR = {
     { h: '명사 + 전치사 궁합', p: '빈칸 뒤 전치사가 단서입니다. 같은 뜻이라도 붙는 전치사가 다르면 오답이에요.',
       ex: [['We received an **inquiry about** the product.', '제품에 **관한 문의**를 받았다.'], ['There is a **shortage of** skilled workers.', '숙련 인력이 **부족하다**.']] },
     { h: '동사 + 명사 연어', p: 'meet a deadline, place an order, make a reservation, conduct a survey처럼 동사와 명사가 짝이 정해져 있습니다.',
-      ex: [['We **conducted a survey** of 500 users.', '사용자 500명을 대상으로 **설문을 했다**.'], ['Please **place your order** online.', '온라인으로 **주문해** 주세요.']] }
+      ex: [['We **conducted a survey** of 500 users.', '사용자 500명을 대상으로 **설문을 했다**.'], ['Please **place your order** online.', '온라인으로 **주문해** 주세요.']] },
+    { h: '비슷한 뜻 명사 구별: 요금·허가·예약', p: 'fee(이용료·수수료), fare(교통 요금), rate(단가·요율), charge(청구 요금), toll(통행료). permit(허가증, 가산) vs permission(허락, 불가산). reservation(예약) vs appointment(사람과의 약속).',
+      ex: [['The museum charges a small **admission fee**.', '박물관은 소액의 **입장료**를 받는다.'], ['Visitors need **a parking permit** to use the lot.', '방문객이 주차장을 쓰려면 **주차 허가증**이 필요하다.']] },
+    { h: '복합명사는 덩어리로 외운다', p: 'safety regulations, job opening, customer satisfaction, expiration date, production facility, sales figures처럼 앞 명사가 뒤 명사를 꾸미는 짝이 정해져 있습니다. 보기에 형용사형이 있어도 덩어리 명사가 정답인 경우가 많아요.',
+      ex: [['All employees must follow **safety regulations**.', '전 직원은 **안전 규정**을 지켜야 한다.'], ['Please check the **expiration date** before use.', '사용 전에 **유효 기간**을 확인하세요.']] },
   ],
   listTitle: '명사 어휘 빈출',
-  list: [['inquiry about', '~에 관한 문의'], ['shortage of', '~의 부족'], ['priority', '우선 사항'], ['estimate', '견적'], ['invoice', '송장, 청구서'], ['reimbursement', '환급'], ['compensation', '보상'], ['warranty', '보증'], ['venue', '장소'], ['itinerary', '여행 일정'], ['inventory', '재고'], ['incentive', '장려책'], ['expertise', '전문 지식'], ['feasibility', '실현 가능성'], ['revenue', '수익'], ['deadline', '마감 기한'], ['capacity', '수용력, 역량'], ['consensus', '합의']]
+  list: [['inquiry about', '~에 관한 문의'], ['shortage of', '~의 부족'], ['priority', '우선 사항'], ['estimate', '견적'], ['invoice', '송장, 청구서'], ['reimbursement', '환급'], ['compensation', '보상'], ['warranty', '보증'], ['venue', '장소'], ['itinerary', '여행 일정'], ['inventory', '재고'], ['incentive', '장려책'], ['expertise', '전문 지식'], ['feasibility', '실현 가능성'], ['revenue', '수익'], ['deadline', '마감 기한'], ['capacity', '수용력, 역량'], ['consensus', '합의'], ['admission fee / bus fare', '입장료 / 버스 요금'], ['interest rate / service charge', '이자율 / 서비스 요금'], ['permit / permission', '허가증(가산) / 허락(불가산)'], ['job opening / vacancy', '공석'], ['customer satisfaction', '고객 만족'], ['sales figures', '매출 수치']]
 },
 'p5-vv': {
   intro: '동사 어휘는 **목적어와의 궁합**과 **구조(자동사/타동사, 뒤에 오는 전치사)**를 함께 봐야 합니다.',
@@ -302,10 +328,14 @@ window.GRAMMAR = {
     { h: '목적어 궁합', p: '빈칸 뒤 목적어가 무엇인지 보고 어울리는 동사를 고르세요. accommodate guests, address concerns, implement a policy.',
       ex: [['The hall can **accommodate 300 guests**.', '그 홀은 **300명을 수용할** 수 있다.'], ['We will **address your concerns** promptly.', '**우려 사항을** 신속히 **처리하겠습니다**.']] },
     { h: '구조 차이', p: 'respond to / reply to (자동사), discuss / approach / attend (타동사, 전치사 없음), inform A of B, remind A of B.',
-      ex: [['Please **inform us of** any changes.', '변경 사항이 있으면 **알려** 주세요.'], ['We **discussed the proposal**.', '제안서를 **논의했다**. (discussed about ✕)']] }
+      ex: [['Please **inform us of** any changes.', '변경 사항이 있으면 **알려** 주세요.'], ['We **discussed the proposal**.', '제안서를 **논의했다**. (discussed about ✕)']] },
+    { h: '자동사 · 타동사 짝 구별', p: 'rise(오르다, 자동사) vs raise(올리다, 타동사), arise(발생하다). "말하다"도 tell + 사람, say + 내용(사람은 to), speak/talk to + 사람. 목적어가 바로 오는지 전치사가 필요한지가 정답을 가릅니다.',
+      ex: [['The company plans to **raise prices** next month.', '회사는 다음 달 **가격을 올릴** 계획이다.'], ['Prices are expected to **rise** by 5 percent.', '가격이 5퍼센트 **오를** 것으로 예상된다.']] },
+    { h: '사람을 바로 목적어로 못 받는 동사', p: 'explain, describe, suggest, announce, mention, introduce, propose는 "동사 + 사람 + 내용"이 안 됩니다. 사람은 to로 빼서 explain the policy to customers처럼 씁니다. 반대로 inform, notify, remind, assure는 사람을 바로 목적어로 받아요.',
+      ex: [['The manager **explained the new policy to** the staff.', '관리자는 직원들**에게** 새 정책을 **설명했다**.'], ['Please **notify us of** any changes.', '변경 사항이 있으면 **알려 주세요**.']] },
   ],
   listTitle: '동사 어휘 빈출',
-  list: [['accommodate', '수용하다, 맞추다'], ['address', '(문제를) 다루다'], ['implement', '시행하다'], ['streamline', '간소화하다'], ['expedite', '신속히 처리하다'], ['allocate', '할당하다'], ['acquire', '인수하다, 얻다'], ['assume', '(책임을) 맡다'], ['commence', '시작하다'], ['comply with', '준수하다'], ['adhere to', '고수하다'], ['enforce', '시행하다'], ['endorse', '지지하다'], ['oversee', '감독하다'], ['reimburse', '환급하다'], ['retain', '보유하다'], ['solicit', '요청하다'], ['undergo', '겪다, 받다']]
+  list: [['accommodate', '수용하다, 맞추다'], ['address', '(문제를) 다루다'], ['implement', '시행하다'], ['streamline', '간소화하다'], ['expedite', '신속히 처리하다'], ['allocate', '할당하다'], ['acquire', '인수하다, 얻다'], ['assume', '(책임을) 맡다'], ['commence', '시작하다'], ['comply with', '준수하다'], ['adhere to', '고수하다'], ['enforce', '시행하다'], ['endorse', '지지하다'], ['oversee', '감독하다'], ['reimburse', '환급하다'], ['retain', '보유하다'], ['solicit', '요청하다'], ['undergo', '겪다, 받다'], ['rise / raise', '오르다 / 올리다'], ['arise', '발생하다 (자동사)'], ['explain / describe + 내용 + to 사람', '사람이 바로 못 옴'], ['inform / notify + 사람 + of 내용', '알리다'], ['assure + 사람 + that', '장담하다'], ['agree to 제안 / with 사람 / on 사안', '동의하다']]
 },
 'p5-vadj': {
   intro: '형용사 어휘는 **꾸미는 명사**나 **뒤에 오는 전치사**와의 궁합이 결정적입니다.',
@@ -313,10 +343,14 @@ window.GRAMMAR = {
     { h: '형용사 + 명사 연어', p: 'competitive salary, extensive experience, tentative schedule. 명사와 같이 외우세요.',
       ex: [['The position offers a **competitive salary**.', '그 자리는 **경쟁력 있는 급여**를 제공한다.'], ['Applicants should have **extensive experience**.', '지원자는 **폭넓은 경험**이 있어야 한다.']] },
     { h: '형용사 + 전치사', p: 'eligible for, responsible for, aware of, capable of, compatible with, subject to.',
-      ex: [['The software is **compatible with** most devices.', '그 소프트웨어는 대부분의 기기와 **호환된다**.']] }
+      ex: [['The software is **compatible with** most devices.', '그 소프트웨어는 대부분의 기기와 **호환된다**.']] },
+    { h: '사람을 주어로 못 쓰는 형용사', p: 'convenient, possible, necessary, difficult, easy는 사람을 주어로 쓰지 않습니다(It is convenient for you to ~). 반대로 likely, able, willing, eager, reluctant는 사람 주어 + to do가 자연스러워요.',
+      ex: [['Please let us know **when it is convenient for you**.', '**편하신 시간**을 알려 주세요.'], ['Mr. Lee **is likely to be promoted** this year.', '이 씨는 올해 **승진할 가능성이 높다**.']] },
+    { h: '비슷한 형용사 구별: available · accessible · valid', p: 'available(이용 가능한, 시간이 되는), accessible(접근·이용하기 쉬운), affordable(가격이 적당한), valid(유효한), applicable(적용되는). 뒤에 오는 명사와 전치사로 구별합니다.',
+      ex: [['The building is **accessible to** wheelchair users.', '건물은 휠체어 이용자도 **드나들 수 있다**.'], ['The coupon is **valid until** the end of the month.', '쿠폰은 월말까지 **유효하다**.']] },
   ],
   listTitle: '형용사 어휘 빈출',
-  list: [['competitive', '경쟁력 있는'], ['extensive', '폭넓은'], ['tentative', '잠정적인'], ['mandatory', '의무적인'], ['optional', '선택적인'], ['prominent', '저명한, 눈에 띄는'], ['substantial', '상당한'], ['adequate', '적절한, 충분한'], ['eligible for', '~할 자격이 있는'], ['compatible with', '~와 호환되는'], ['capable of', '~할 수 있는'], ['subject to', '~의 대상인'], ['accessible', '접근 가능한'], ['affordable', '저렴한'], ['durable', '내구성 있는'], ['upcoming', '다가오는'], ['vacant', '비어 있는'], ['punctual', '시간을 지키는']]
+  list: [['competitive', '경쟁력 있는'], ['extensive', '폭넓은'], ['tentative', '잠정적인'], ['mandatory', '의무적인'], ['optional', '선택적인'], ['prominent', '저명한, 눈에 띄는'], ['substantial', '상당한'], ['adequate', '적절한, 충분한'], ['eligible for', '~할 자격이 있는'], ['compatible with', '~와 호환되는'], ['capable of', '~할 수 있는'], ['subject to', '~의 대상인'], ['accessible', '접근 가능한'], ['affordable', '저렴한'], ['durable', '내구성 있는'], ['upcoming', '다가오는'], ['vacant', '비어 있는'], ['punctual', '시간을 지키는'], ['convenient for 사람', '~에게 편리한 (사람 주어 X)'], ['likely to do', '~할 것 같은 (사람 주어 O)'], ['valid / applicable', '유효한 / 적용되는'], ['reasonable', '합리적인, 적당한'], ['responsive to', '~에 즉각 반응하는'], ['familiar with', '~에 익숙한']]
 },
 'p5-vadv': {
   intro: '부사 어휘는 **동사·형용사와의 궁합**과 **시제와의 궁합**이 단서입니다. already/yet/still, recently/soon 같은 시간 부사는 시제와 맞춰 보세요.',
@@ -324,9 +358,13 @@ window.GRAMMAR = {
     { h: '시제와 맞는 부사', p: 'recently·lately → 현재완료/과거, soon·shortly → 미래, currently → 현재(진행), previously·formerly → 과거.',
       ex: [['The office **recently moved** downtown.', '사무실이 **최근** 시내로 **옮겼다**.'], ['The results **will be announced shortly**.', '결과는 **곧 발표된다**.']] },
     { h: '동사·형용사와의 궁합', p: 'highly recommended, closely monitored, readily available, strictly prohibited 같은 고정 짝.',
-      ex: [['Smoking is **strictly prohibited**.', '흡연은 **엄격히 금지된다**.'], ['Parts are **readily available**.', '부품을 **쉽게 구할 수 있다**.']] }
+      ex: [['Smoking is **strictly prohibited**.', '흡연은 **엄격히 금지된다**.'], ['Parts are **readily available**.', '부품을 **쉽게 구할 수 있다**.']] },
+    { h: '숫자·양을 꾸미는 부사', p: 'approximately, roughly, nearly, almost, about은 "대략·거의", up to는 "최대 ~까지", at least는 "최소", as many as / as much as는 "무려". 숫자 앞 빈칸이면 이 묶음에서 고르고, 동사를 꾸미는 부사는 지웁니다.',
+      ex: [['The event attracted **approximately 500** visitors.', '행사에 **약 500명**이 방문했다.'], ['The parking garage holds **up to 200** cars.', '주차장은 **최대 200대**까지 수용한다.']] },
+    { h: '앞 문장과 이어 주는 부사', p: 'accordingly(그에 따라), consequently(그 결과), alternatively(대신에), likewise(마찬가지로), nonetheless(그럼에도), meanwhile(그동안). 두 문장의 관계를 먼저 정한 뒤 고르세요. Part 6 접속부사 문제에도 그대로 나옵니다.',
+      ex: [['The schedule has changed; **accordingly**, the meeting will start at 3 P.M.', '일정이 바뀌어서 **그에 따라** 회의는 오후 3시에 시작한다.'], ['You can pay online. **Alternatively**, you may pay at the front desk.', '온라인으로 결제할 수 있다. **아니면** 안내 데스크에서 내도 된다.']] },
   ],
   listTitle: '부사 연어 빈출',
-  list: [['highly recommended', '적극 추천되는'], ['closely monitored', '면밀히 관찰되는'], ['readily available', '쉽게 구할 수 있는'], ['strictly prohibited', '엄격히 금지된'], ['newly renovated', '새로 보수된'], ['fully booked', '예약이 꽉 찬'], ['widely recognized', '널리 인정받는'], ['conveniently located', '편리한 곳에 있는'], ['tentatively scheduled', '잠정 예정된'], ['temporarily closed', '일시 폐쇄된'], ['sharply / steadily', '급격히 / 꾸준히'], ['promptly', '신속히, 정각에'], ['regularly', '정기적으로'], ['exclusively', '독점적으로'], ['previously', '이전에'], ['accordingly', '그에 맞춰']]
+  list: [['highly recommended', '적극 추천되는'], ['closely monitored', '면밀히 관찰되는'], ['readily available', '쉽게 구할 수 있는'], ['strictly prohibited', '엄격히 금지된'], ['newly renovated', '새로 보수된'], ['fully booked', '예약이 꽉 찬'], ['widely recognized', '널리 인정받는'], ['conveniently located', '편리한 곳에 있는'], ['tentatively scheduled', '잠정 예정된'], ['temporarily closed', '일시 폐쇄된'], ['sharply / steadily', '급격히 / 꾸준히'], ['promptly', '신속히, 정각에'], ['regularly', '정기적으로'], ['exclusively', '독점적으로'], ['previously', '이전에'], ['accordingly', '그에 맞춰'], ['up to + 숫자', '최대 ~까지'], ['as many as + 숫자', '무려 ~나'], ['well over / just under', '훨씬 넘는 / 조금 못 미치는'], ['alternatively', '대신에, 아니면'], ['likewise', '마찬가지로'], ['nonetheless', '그럼에도']]
 }
 };
